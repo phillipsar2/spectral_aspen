@@ -70,7 +70,7 @@ set-resources:
 
   # Used only if settings:trimming-tool == fastp
   fastp:
-    threads: 4
+    threads: 2
 
   # ----------------------------------------------------------------------
   #     trimmomatic
@@ -78,7 +78,7 @@ set-resources:
 
   # Used only if settings:trimming-tool == trimmomatic
   trimmomatic:
-    threads: 6
+    threads: 2
 
   # ----------------------------------------------------------------------
   #     bwa-mem2
@@ -94,8 +94,8 @@ set-resources:
 
   # Just under three days to map
   bwa_map:
-    mem_mb: 38000
-    threads: 4
+    mem_mb: 16000
+    threads: 2
     runtime: 4319
 
   # ----------------------------------------------------------------------
@@ -103,18 +103,18 @@ set-resources:
   # ----------------------------------------------------------------------
 
   samtools_sort:
-    mem_mb: 38000
-    threads: 4
-    runtime: 1440
+    mem_mb: 16000
+    threads: 2
+    runtime: 360
 
   # ----------------------------------------------------------------------
   #     mark_dups
   # ----------------------------------------------------------------------
 
   mark_dups:
-    mem_mb: 32000
-    threads: 4
-    runtime: 1440
+    mem_mb: 16000
+    threads: 2
+    runtime: 360
 
   # ----------------------------------------------------------------------
   #     bamqc
