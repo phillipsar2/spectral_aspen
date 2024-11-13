@@ -33,6 +33,8 @@ rule fastp_trim:
         trim = "/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz"
     conda:
         "/global/home/users/arphillips/aspen/spectral_aspen/envs/fastp.yaml"
+    benchmark:
+        "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.trim.benchmark.txt"
     shell:
         """
         fastp -w 2 \
@@ -64,6 +66,8 @@ rule bwa_map:
     output:
         temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{sample}.mapped.bam")
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bwa_map.yaml"
+    benchmark:
+         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bwa.benchmark.txt"
     shell:
         "~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 mem -t 4 {input.ref} {input.trim} |"
         "samtools view -Sb > {output}"
@@ -77,6 +81,8 @@ rule samtools_sort:
     params:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/sort_bam/{sample}"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/samtools.yaml"
+    benchmark:
+       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.sort.benchmark.txt"
     shell:
         """ 
         mkdir -p {params.tmp}
@@ -94,6 +100,8 @@ rule add_rg:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/addrg/{sample}",
         sample = "{sample}"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
+    benchmark:
+       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.add_rg.benchmark.txt"
     shell:
         """
         mkdir -p {params.tmp}
@@ -120,6 +128,8 @@ rule mark_dups:
     params:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/mark_dups/{sample}"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
+    benchmark:
+         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.dups.benchmark.txt"
     shell:
         """
         # Create a scratch directory
@@ -149,6 +159,8 @@ rule bamqc:
     params:
         dir = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/qualimap.yaml"
+    benchmark:
+         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bamqc.benchmark.txt"
     shell:
         """
         qualimap bamqc \
