@@ -1,0 +1,7 @@
+channels:
+# Somehow only works with the channels in this order...
+  - conda-forge
+  - bioconda
+dependencies:
+# Tools
+  - bioconda::samtools ==1.20

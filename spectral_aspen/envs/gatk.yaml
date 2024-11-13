@@ -1,0 +1,16 @@
+channels:
+  # conda-forge channel first, as required by issue #25
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  # Python
+  - python ==3.12
+  - pandas ==2.2.2
+  - numpy  ==2.0.0
+  # Tools
+  - gatk4 ==4.5.0.0
+  - snakemake-wrapper-utils ==0.6.2
+  # For plotting the VSQR output, we need R
+  - r #==4.1       
+  - r-ggplot2 #==3.3.6
