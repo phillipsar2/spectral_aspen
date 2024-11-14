@@ -1,8 +1,10 @@
 configfile: "profiles/config.yaml"
 import pandas as pd
+from random import randint
 
 sample_file = pd.read_csv("sequences_to_work_with.11132024.csv", header = 0)
-SAMPLE = list(sample_file.filenames)
+SAMPLE = list(sample_file.filenames)[0:3]
+print(SAMPLE)
 
 # =================================================================================================
 #     Target Rules
