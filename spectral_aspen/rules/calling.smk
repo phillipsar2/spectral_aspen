@@ -16,7 +16,7 @@ rule bamlist:
 # --annotate FORMAT/AD,FORMAT/DP give allele and genotype depths
 rule mpileup:
     input:
-        ref = config.ref,
+        ref = config["data"]["reference"]["genome"],
         bamlist = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{date}.bamlist.txt", date = DATE) 
     output:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
@@ -36,7 +36,7 @@ rule mpileup:
 # (9) Extract SNPs from each vcf
 rule get_snps:
     input:
-        ref = config.ref,
+        ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
     output:
          "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
@@ -56,7 +56,7 @@ rule get_snps:
 rule diagnostics:
     input:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz",
-        ref = config.ref
+        ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
@@ -76,7 +76,7 @@ rule diagnostics:
 # Hard filter for mapping quality and base quality
 rule filter_snps:
     input:
-        ref = config.ref,
+        ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
@@ -94,7 +94,7 @@ rule filter_snps:
 # (12) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
 rule filter_nocall:
     input:
-        ref = config.ref,
+        ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/{cov}/rad_aspen.{chr}.filtered.nocall.vcf"

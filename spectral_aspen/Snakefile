@@ -14,7 +14,7 @@ SAMPLE = list(sample_file.filenames)
 
 # Chromosomes
 fai =  pd.read_csv("/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/genome.1MX.fasta.fai", header = None)
-CHROM = list(fai[0])
+CHROM = list(fai[0])[0:1]
 print(CHROM)
 
 # Date
