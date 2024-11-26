@@ -48,9 +48,10 @@ printshellcmds: True
 default-resources:
   slurm_partition: "savio3_htc" 
   slurm_account:  "fc_mel"
-  runtime: 2880
+  runtime: 60
   cores: 1
   cpus_per_task: 1
+  mem_mb: 9600
 
 # =================================================================================================
 #     Tool Parameters
@@ -117,23 +118,10 @@ set-resources:
   #     bcftools
   # ----------------------------------------------------------------------
 
-  # Used only if settings:calling-tool == bcftools
-  bcftools:
-    mpileup: "--max-depth 10000"
-    call: ""
-    threads: 6
-    # concat: ""
-
-  # ----------------------------------------------------------------------
-  #     freebayes
-  # ----------------------------------------------------------------------
-
-  # Used only if settings:calling-tool == freebayes
-  freebayes:
-    extra: ""
-    chunksize: 100000
-    threads: 4
-    compress-threads: 2
+  mpileup:
+    threads: 2
+    mem_mb: 19200
+    runtime: 120
 
   # ----------------------------------------------------------------------
   #     gatk

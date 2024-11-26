@@ -22,7 +22,9 @@ rule mpileup:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
     params:
         chr = "{chr}"
-    conda:
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bcftools.yaml"
+    benchmark:
+         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{chr}.mpileup.benchmark.txt"
     shell:
         """
         bcftools mpileup -Ou -f {input.ref} -b {input.bamlist} -r {params.chr} \
@@ -38,6 +40,7 @@ rule get_snps:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
     output:
          "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     run:
         """
         gatk SelectVariants \
@@ -56,6 +59,7 @@ rule diagnostics:
         ref = config.ref
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     shell:
         """
         gatk VariantsToTable \
@@ -76,6 +80,7 @@ rule filter_snps:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     shell:
         """
         gatk VariantFiltration \
@@ -93,6 +98,7 @@ rule filter_nocall:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/{cov}/rad_aspen.{chr}.filtered.nocall.vcf"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     shell: 
         """
         gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}
