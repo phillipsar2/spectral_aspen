@@ -8,7 +8,7 @@ Data source:
 
 ## Running the pipeline
 
-`snakemake --executor slurm --profile profiles/ --use-conda`
+`snakemake --executor slurm --profile profiles/ --use-conda --rerun-triggers input`
 
 ## Project organization
 <pre>
@@ -35,5 +35,18 @@ Data source:
 ├── reports 		 <- Generated analyses as HTML, PDF, or .txt.  
 ├── qc 			 <- Quality check output for raw data  
 ├── Snakefile  
-└── config.yaml  
+└── profiles/config.yaml  
 </pre>
+
+1. Pre-processing of reads
+* Assess read quality with fastqc
+* Trim reads with fastp and re-evaluate quality. Reads are trimmed via sliding windows (4 bp windows, min quality of 15) and automated detection of adapters.
+
+2. Mapping
+* Map reads to the reference with bwa-mem2
+* Sort and add read groups to BAM files with samtools and GATK.
+* Assess mapping quality with qualimap's bamqc (read duplication metric is incorrect)
+
+3. Variant calling
+* BCFtools is used to call variants
+* Updog (https://dcgerard.github.io/updog/index.html) will be used to estimate genotypes. This software considers sequencing error, allele bias, and overdispersion. The input of updog is read counts for SNPs, so variats must be called and initially filtered prior to genotype calling. 

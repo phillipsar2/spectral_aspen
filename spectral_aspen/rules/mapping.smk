@@ -146,5 +146,5 @@ rule bamqc:
         -outdir {params.dir} \
         -outformat HTML \
         --skip-duplicated \
-        --java-mem-size=9.6G
+        --java-mem-size=24G
         """

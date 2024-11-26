@@ -1,10 +1,26 @@
 configfile: "profiles/config.yaml"
 import pandas as pd
 from random import randint
+import datetime
 
+# =================================================================================================
+#    Wildcards
+# =================================================================================================
+
+# Sample names
 sample_file = pd.read_csv("sequences_to_work_with.11132024.csv", header = 0)
-SAMPLE = list(sample_file.filenames)[0:3]
-print(SAMPLE)
+SAMPLE = list(sample_file.filenames)
+#print(SAMPLE)
+
+# Chromosomes
+fai =  pd.read_csv("/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/genome.1MX.fasta.fai", header = None)
+CHROM = list(fai[0])
+print(CHROM)
+
+# Date
+DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
+
+
 
 # =================================================================================================
 #     Target Rules
@@ -13,9 +29,11 @@ rule all:
     input:
         #fastqc = expand("/global/scratch/users/arphillips/spectral_aspen/qc/fastqc/{sample}_fastqc.zip", sample = SAMPLE),
         #fastp = expand("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz" , sample = SAMPLE),
-        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE)
+        #bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE)
+        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM)
 
 # =================================================================================================
 #     Rule Modules
 # =================================================================================================
 include: "rules/mapping.smk"
+include: "rules/calling.smk"
