@@ -56,7 +56,11 @@ rule bwa_prep:
         index = "/global/scratch/projects/fc_moilab/projects/aspen/genome/mex_genome/genome.1MX.fasta.gz.0123"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bwa-mem2.yaml"
     shell:
-        "~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 index {input}"
+        """
+        ~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 index {input}
+        samtools faidx {input}
+        gatk CreateSequenceDictionary -R {input}
+        """
 
 
 # (3b) Align reads to the reference genome

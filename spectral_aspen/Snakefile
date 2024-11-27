@@ -13,9 +13,9 @@ SAMPLE = list(sample_file.filenames)
 #print(SAMPLE)
 
 # Chromosomes
-fai =  pd.read_csv("/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/genome.1MX.fasta.fai", header = None)
-CHROM = list(fai[0])[0:1]
-print(CHROM)
+fai =  pd.read_csv("/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/genome.1MX.fasta.fai", header = None, sep = "\t")
+CHROM = list(fai[0])
+#print(CHROM)
 
 # Date
 DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
@@ -27,13 +27,15 @@ DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 # =================================================================================================
 rule all:
     input:
-        #fastqc = expand("/global/scratch/users/arphillips/spectral_aspen/qc/fastqc/{sample}_fastqc.zip", sample = SAMPLE),
-        #fastp = expand("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz" , sample = SAMPLE),
-        #bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE)
-        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM)
+#        fastqc = expand("/global/scratch/users/arphillips/spectral_aspen/qc/fastqc/{sample}_fastqc.zip", sample = SAMPLE),
+#        fastp = expand("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz" , sample = SAMPLE),
+#        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/qualimapReport.html", sample = SAMPLE)
+#        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM),
+#        table = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
+        dp = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
 
 # =================================================================================================
 #     Rule Modules
 # =================================================================================================
-include: "rules/mapping.smk"
+#include: "rules/mapping.smk"
 include: "rules/calling.smk"

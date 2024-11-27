@@ -6,7 +6,7 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --output /global/home/users/arphillips/aspen/spectral_aspen/slurm_log/edta_%j.out
 #SBATCH --error /global/home/users/arphillips/aspen/spectral_aspen/slurm_log/edta_%j.err
-#SBATCH --chdir /global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome
+#SBATCH --chdir /global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/
 
 # Run EDTA
 
@@ -15,7 +15,8 @@ module load repeatmasker/4.1.3
 module load repeatmodeler/2.0.3
 source activate /global/home/users/arphillips/.conda/envs/EDTA2
 
-ref="genome.1MX.fasta"
+# Had to create a ref file with modified chromosome name as the original was too long
+ref="genome.1MX.modifiedchrnames.fasta"
 cds="Potre.1MX.cds.fasta"
 threads=32
 

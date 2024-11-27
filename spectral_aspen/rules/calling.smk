@@ -1,13 +1,13 @@
 # (7) make bam list
 rule bamlist:
     input:
-       bams = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.sorted.bam", sample = SAMPLE)
+       bams = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.rg.bam", sample = SAMPLE)
     output:
        bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{date}.bamlist.txt"
     params:
        path = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/"
     shell:
-       "ls {params.path} > {output}"
+       "ls {params.path}*bam > {output}"
 
 # (8) Call snps initially with bcftools to identify variable sites
 # default only sites with max 250 reads considered at each positin, this is way above the max coverage
@@ -41,7 +41,7 @@ rule get_snps:
     output:
          "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
-    run:
+    shell:
         """
         gatk SelectVariants \
         -R {input.ref} \
@@ -53,9 +53,10 @@ rule get_snps:
 
 # (10) Filtering diagnostics - extract variant quality scores
 # Roughly following suggestions in https://evodify.com/gatk-in-non-model-organism/
+# Extract alternate base quality (QUAL), mapping quality (MQ), depth at the site (DP), and allele depth for each genotype (AD)
 rule diagnostics:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz",
         ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table"
@@ -65,9 +66,14 @@ rule diagnostics:
         gatk VariantsToTable \
         -R {input.ref} \
         -V {input.vcf} \
-        -F QUAL -F QD -F DP -F MQ -F MQRankSum -F FS -F ReadPosRankSum -F SOR -F AD \
+        -F QUAL -F DP -F MQ -GF AD \
         -O {output}
         """
+
+# Concatenate files
+#  head -n1 rad_aspen.Potre.1MX.Chr01.table > rad_aspen.all.table
+# grep -v QUAL  <(cat rad_aspen.Potre.1MX.*.table) >> rad_aspen.all.table
+
 
 # (11) Hard filter SNPs
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
@@ -102,4 +108,22 @@ rule filter_nocall:
     shell: 
         """
         gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}
+        ""
+
+# (13) Extract genotype depth across samples to determine DP cutoff
+rule depth:
+    input:
+        vcf =  "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/{cov}/rad_aspen.{chr}.filtered.nocall.vcf",
+        ref = config["data"]["reference"]["genome"]
+    output:
+        dp = "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
+    shell:
+        """
+        gatk VariantsToTable \
+        -R {input.ref} \
+        -V {input.vcf} \
+        -F CHROM -F POS \
+        -GF DP \
+        -O {output.dp}
         """
