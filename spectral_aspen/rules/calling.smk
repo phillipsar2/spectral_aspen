@@ -70,12 +70,12 @@ rule diagnostics:
         -O {output}
         """
 
-# Concatenate files
+# (11) Concatenate files for analysis
 #  head -n1 rad_aspen.Potre.1MX.Chr01.table > rad_aspen.all.table
 # grep -v QUAL  <(cat rad_aspen.Potre.1MX.*.table) >> rad_aspen.all.table
 
 
-# (11) Hard filter SNPs
+# (12) Hard filter SNPs
 # https://gatk.broadinstitute.org/hc/en-us/articles/360035531112?id=23216#2
 # https://gatk.broadinstitute.org/hc/en-us/articles/360037499012?id=3225
 
@@ -96,27 +96,26 @@ rule filter_snps:
         -O {output}
         """
 
-
-# (12) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
+# (13) Filter SNPs to only biallelic sites and exclude the sites that failed the hard filter
 rule filter_nocall:
     input:
         ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
     output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/{cov}/rad_aspen.{chr}.filtered.nocall.vcf"
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
-    shell: 
+    shell:
         """
         gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}
-        ""
+        """
 
-# (13) Extract genotype depth across samples to determine DP cutoff
+# (14) Extract genotype depth across samples to determine DP cutoff
 rule depth:
     input:
-        vcf =  "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/{cov}/rad_aspen.{chr}.filtered.nocall.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf",
         ref = config["data"]["reference"]["genome"]
     output:
-        dp = "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table"
+        "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table"
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     shell:
         """
@@ -125,5 +124,49 @@ rule depth:
         -V {input.vcf} \
         -F CHROM -F POS \
         -GF DP \
-        -O {output.dp}
+        -O {output}
         """
+
+# (15) Concatenate files for analysis
+#  head -n1 rad_aspen.Potre.1MX.Chr01.filtered.nocall.table > rad_aspen.all.filtered.nocall.table
+# grep -v CHROM  <(cat rad_aspen.Potre.1MX.*.filtered.nocall.table) >> rad_aspen.all.filtered.nocall.table
+
+
+# (16) Fitlter by depth of each genotype at each site
+rule filter_depth:
+    input:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf",
+        ref = config["data"]["reference"]["genome"]
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
+    output:
+        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.3dp10.vcf"
+    shell:
+        """
+        gatk VariantFiltration \
+        -R {input.ref} \
+        -V {input.vcf} \
+        -G-filter \"DP < 3 || DP > 30 \" \
+        -G-filter-name \"DP_3-100\" \
+        --set-filtered-genotype-to-no-call true -O {output.dp}
+        """
+
+# (17) Filter snps for genotype missingness
+rule depth_nocall:
+    input:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.3dp10.vcf",
+    output:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.3dp10.nocall.vcf",
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
+    shell:
+        "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.1 -O {output}"
+
+# (18) Combine vcfs with bcftools
+rule combine_vcfs:
+    input:
+        expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.3dp10.nocall.vcf", chr = CHROM)
+    output:
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp10.nocall.vcf.gz"
+    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bcftools.yaml"
+    shell:
+        "bcftools concat {input} -Oz -o {output}"
+
