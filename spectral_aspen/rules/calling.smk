@@ -133,40 +133,34 @@ rule depth:
 
 
 # (16) Fitlter by depth of each genotype at each site
+# 6 < DP < 30 with 10% missing is too strict - only 15 SNPs
 rule filter_depth:
     input:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf",
         ref = config["data"]["reference"]["genome"]
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     output:
-        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.vcf"
+        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf"
+    params:
+        min = "{min_dp}",
+        max = "{max_dp}"
     shell:
         """
         gatk VariantFiltration \
         -R {input.ref} \
         -V {input.vcf} \
-        -G-filter \"DP < 6 || DP > 30 \" \
-        -G-filter-name \"DP_6-30\" \
+        -G-filter \"DP < {params.min} || DP > {params.max} \" \
+        -G-filter-name \"DP_{params.min}-{params.max}\" \
         --set-filtered-genotype-to-no-call true -O {output.dp}
         """
 
 # (17) Filter snps for genotype missingness
 rule depth_nocall:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf",
     output:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.nocall.vcf",
     conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/gatk.yaml"
     shell:
         "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.1 -O {output}"
-
-# (18) Combine vcfs with bcftools
-rule combine_vcfs:
-    input:
-        expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.3dp10.nocall.vcf", chr = CHROM)
-    output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp10.nocall.vcf.gz"
-    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bcftools.yaml"
-    shell:
-        "bcftools concat {input} -Oz -o {output}"
 

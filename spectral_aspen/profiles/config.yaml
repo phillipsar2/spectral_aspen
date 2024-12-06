@@ -124,52 +124,13 @@ set-resources:
     runtime: 120
 
   # ----------------------------------------------------------------------
-  #     gatk
+  #     combine_vcfs
   # ----------------------------------------------------------------------
 
-  gatk:
-    # Used only if settings:recalibrate-base-qualities == true
-    BaseRecalibrator: ""
-
-    # Used only if settings:calling-tool == haplotypecaller
-    HaplotypeCaller: ""
-    HaplotypeCaller-threads: 2
-    GenotypeGVCFs: ""
-
-    # Used only if settings:vqsr == true
-    VariantRecalibrator: ""
-
-  # ----------------------------------------------------------------------
-  #     gatk / variantfiltration
-  # ----------------------------------------------------------------------
-
-  # Used only if settings:vqsr == false
-  variantfiltration-hard:
-    # Hard filtering as outlined in GATK docs
-    # (https://gatkforums.broadinstitute.org/gatk/discussion/2806/howto-apply-hard-filters-to-a-call-set)
-    snvs:
-      "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0"
-    indels:
-      "QD < 2.0 || FS > 200.0 || ReadPosRankSum < -20.0"
-
-
-  # ----------------------------------------------------------------------
-  #     qualimap
-  # ----------------------------------------------------------------------
-
-  qualimap:
-    # Additional parameters for qualimap
-    extra: ""
-    threads: 2
-
-  # ----------------------------------------------------------------------
-  #     snpeff
-  # ----------------------------------------------------------------------
-
-  snpeff:
-    # Additional parameters for snpeff, see https://pcingola.github.io/SnpEff/se_commandline/
-    # Used only if settings:snpeff == true
-    extra: "-Xmx4g"
+  combine_vcfs:
+    threads: 1
+    mem_mb: 9600
+    runtime: 120
 
   # ----------------------------------------------------------------------
   #     mapdamage
