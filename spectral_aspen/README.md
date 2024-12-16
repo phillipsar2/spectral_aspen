@@ -47,7 +47,12 @@ Data source:
 * Sort and add read groups to BAM files with samtools and GATK.
 * Assess mapping quality with qualimap's bamqc (read duplication metric is incorrect)
 
-3. Variant calling
+3. Ploidy determination
+* Ploidy was previously estimated for a majority of samples using [gbs2ploidy](https://doi.org/10.32614/CRAN.package.gbs2ploidy)
+* Ploidy will be validated using [nQuack](https://github.com/mgaynor1/nQuack).
+* For nQuack, BAMs are filtered for MQ > 10 and repetitive regions annotated by EDTA are excluded. 
+
+4. Variant calling
 * BCFtools is used to call variants.
 	Raw SNPs: 2,823,151
 * Variants were hard filtered to keep QUAL > 30, MQ > 30, and biallelic sites
