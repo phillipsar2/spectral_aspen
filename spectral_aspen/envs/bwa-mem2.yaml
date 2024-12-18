@@ -11,5 +11,4 @@ dependencies:
   - bwa-mem2 ==2.2.1
   - picard ==3.2.0
   - samtools ==1.20
-  - gatk4 ==4.5.0.0
-  - r-ggplot2 #==3.3.6
+    #  - gatk4 ==4.5.0.0

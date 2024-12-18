@@ -6,7 +6,7 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --output /global/home/users/arphillips/aspen/spectral_aspen/slurm_log/edta_%j.out
 #SBATCH --error /global/home/users/arphillips/aspen/spectral_aspen/slurm_log/edta_%j.err
-#SBATCH --chdir /global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/mex_genome/
+#SBATCH --chdir /global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/
 
 # Run EDTA
 
@@ -16,7 +16,7 @@
 #source activate /global/home/users/arphillips/.conda/envs/EDTA2
 
 # Had to create a ref file with modified chromosome name as the original was too long
-ref="genome.1MX.modifiedchrnames.fasta"
+ref="Populus_tremuloides_var_CAM1604-4_HAP1_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta"
 cds="Potre.1MX.cds.fasta"
 threads=32
 
