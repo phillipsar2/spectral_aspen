@@ -54,11 +54,11 @@ Data source:
 
 4. Variant calling
 * BCFtools is used to call variants.
-	Raw SNPs: 3,825,061
+	Raw SNPs: 3,942,970
 * Variants were hard filtered to keep QUAL > 30, MQ > 30, and biallelic sites
-        SNPs after hard filters:
+        SNPs after hard filters: 1,413,730
 * Multiple depth and genotype missingness filters were tested.
- 	3 < DP < 30 & 10%: 
-	1 < DP < 30 & 10%:
+ 	3 < DP < 30 & 10%: 26,475 
+	1 < DP < 30 & 10%: 111,953
 * Updog (https://dcgerard.github.io/updog/index.html) will be used to estimate genotypes. This software considers sequencing error, allele bias, and overdispersion. The input of updog is read counts for SNPs, so variats must be called and initially filtered prior to genotype calling.
 * After genotyping, an LD filter will be applied 

@@ -29,7 +29,7 @@ qual <- read.table(paste0(dir, files[2]), header = T)
 dim(qual)
 str(qual)
 
-pdf(paste0(dir, "alignment_quality.",Sys.Date(),".pdf"))
+pdf(paste0(dir, "alignment_quality.chr2.",Sys.Date(),".pdf"))
 
 qual %>%
   ggplot(aes(x=QUAL)) +
@@ -77,7 +77,11 @@ dplyr::filter(qual, QUAL > 30, MQ > 50, DP < 50, DP > 20) %>%
 ### Filtering for Depth
 ##############
 # Load quality table
-qual <- read.table("~/aspen/radseq/erincar/rad_aspen.all.filtered.nocall.table" , header = T, skip = 1)
+dir <- as.character("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/")
+files <- list.files(path = dir, pattern = ".table")
+
+qual <- read.table(paste0(dir, files[2]), header = T)
+# qual <- read.table("~/aspen/radseq/erincar/rad_aspen.all.filtered.nocall.table" , header = T, skip = 1)
 head(qual)
 str(qual)
 dim(qual)
@@ -97,8 +101,8 @@ str(qual)
 dim(qual)
 
 # Replace 0s with NA
-qual[qual == 0] <- "NA"
-dim(qual)
+# qual[qual == 0] <- "NA"
+# dim(qual)
 
 # Estimate mean genotype depth for sites with coverage
 geno_dp <- colMeans(qual[3:dim(qual)[2]], na.rm = T)
@@ -113,14 +117,14 @@ p_gdp <- reshape2::melt(geno_dp) %>%
   labs(x = "Average genotype depth", 
        title = paste0("Average genotype depth for ", genotypes, " genotypes"))
 
-ggsave(plot = p_gdp, filename = paste0("~/aspen/radseq/erincar/quality_check/avg_geno_dp.", Sys.Date(),".jpg"),
+ggsave(plot = p_gdp, filename = paste0(dir, "avg_geno_dp.", Sys.Date(),".jpg"),
        width = 5, height = 4, units = "in")
 
 # Plot genotype depth distributions
 qlist <- matrix(nrow = genotypes, ncol = 3) # define number of samples (10 samples here)
 qlist <- data.frame(qlist, row.names=colnames(qual)[-c(1:2)])
 
-pdf(paste0("~/aspen/radseq/erincar/quality_check/genotype_depth_distributions.",Sys.Date(),".pdf"))
+pdf(paste0(dir, "genotype_depth_distributions.",Sys.Date(),".pdf"))
 par(mfrow=c(4,3)) # mfrow sets max number of plots (rows by columns), automatically makes new pages if PDF
 
 for (i in 3:dim(qual)[2]) {
@@ -145,8 +149,24 @@ dev.off()
 
 # Depth per site
 site_dp <- rowSums(qual[3:dim(qual)[2]], na.rm = T)
-hist(site_dp, xlim = c(0, 40000))
+
+ggplot(aes())
+
+# hist(site_dp, xlim = c(0, 400), breaks = 50)
+p_sdp <- as.data.frame(site_dp) %>% 
+  ggplot(aes(x=site_dp)) +
+  geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.9, ) +
+  xlim(c(0,50)) +
+  theme_bw() +
+  geom_vline(xintercept = mean(site_dp, na.rm = T), color = "black") +
+  labs(x = "Average genotype depth at each site", 
+       title = paste0("Average genotype depth at each site for ", length(site_dp), " sites"))
+
+ggsave(plot = p_sdp, filename = paste0(dir, "avg_geno_dp.", Sys.Date(),".jpg"),
+       width = 5, height = 4, units = "in")
 
 # Genotypes with data (not zero)
 genos_with_data <- rowSums(is.na(qual[,3:dim(qual)[2]]))
-hist(genos_with_data, xlab = "Number of genotypes sequenced", main = "Number of genotypes sequenced per site", ylab = "Number of sites")
+hist(genos_with_data, 
+     xlab = "Number of genotypes sequenced", 
+     main = "Number of genotypes sequenced per site", ylab = "Number of sites")

@@ -10,7 +10,7 @@ rule fastqc:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/fastqc/{sample}",
         outdir = "/global/scratch/users/arphillips/spectral_aspen/qc/fastqc"
     conda:
-        "/global/home/users/arphillips/aspen/spectral_aspen/envs/fastqc.yaml"
+        "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastqc.yaml"
     resources:
         cpus_per_task=2
     shell:
@@ -34,7 +34,7 @@ rule fastp_trim:
         trim = temp("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz")
     conda:
 #        "/global/home/users/arphillips/aspen/spectral_aspen/envs/fastp.yaml"
-         "/global/home/users/arphillips/aspen/aspen_snakemake/envs/fastp.yaml"
+         "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastp.yaml"
 #    benchmark:
 #        "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.trim.benchmark.txt"
     shell:
@@ -52,8 +52,8 @@ rule bwa_prep:
     input: 
         config["data"]["reference"]["genome"]
     output:
-        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123"
-    conda: "/global/home/users/arphillips/aspen/aspen_snakemake/envs/bwa-mem2.yaml"
+        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123" 
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa-mem2.yaml"
     shell:
         """
         ~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 index {input}
@@ -67,11 +67,11 @@ rule bwa_prep:
 rule bwa_map:
     input:
         ref = config["data"]["reference"]["genome"],
-        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123",
+        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123", 
         trim = "/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz"
     output:
         temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{sample}.mapped.bam")
-    conda: "/global/home/users/arphillips/aspen/aspen_snakemake/envs/bwa_map.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa_map.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bwa.benchmark.txt"
     shell:
@@ -86,7 +86,7 @@ rule samtools_sort:
         temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/sorted_bam/{sample}.sorted.bam"),
     params:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/sort_bam/{sample}"
-    conda: "/global/home/users/arphillips/aspen/aspen_snakemake/envs/samtools.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
 #    benchmark:
 #       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.sort.benchmark.txt"
     shell:
@@ -106,7 +106,7 @@ rule add_rg:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/addrg/{sample}",
         sample = "{sample}",
         rg = randint(1,1000)
-    conda: "/global/home/users/arphillips/aspen/aspen_snakemake/envs/gatk.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
 #    benchmark:
 #       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.add_rg.benchmark.txt"
     shell:
@@ -137,7 +137,7 @@ rule bamqc:
     params:
         dir = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats",
         stats_dir = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc"
-    conda: "/global/home/users/arphillips/aspen/aspen_snakemake/envs/qualimap.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/qualimap.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bamqc.benchmark.txt"
     shell:
@@ -155,7 +155,7 @@ rule bamqc:
 
 rule bamqc_stats:
     input:
-        expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.rg.bam", sample = SAMPLE)
+        expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/genome_results.txt", sample = SAMPLE)        
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/stats.bamqc.txt"
     params:

@@ -5,7 +5,7 @@ rule create_sites:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz"
     output:
         sites = "/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.positions"
-    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/bcftools.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
     shell:
         """
         bcftools query \
@@ -18,13 +18,13 @@ rule create_sites:
 rule ibs:
     input:
         ref = config["data"]["reference"]["genome"],
-        bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/2024-11-26.bamlist.txt",
+        bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/bamlist.txt",
         sites = "/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.positions"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.ibs.gz"
     params:
         prefix = "/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}"
-    conda: "/global/home/users/arphillips/aspen/spectral_aspen/envs/angsd.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/angsd.yaml"
     shell:
         """
         angsd sites index {input.sites}
@@ -35,5 +35,6 @@ rule ibs:
         -doCounts 1 \
         -ref {input.ref} \
         -doIBS 1 \
+        -doCov 1
         -out {params.prefix}
         """
