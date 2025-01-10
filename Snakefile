@@ -22,7 +22,7 @@ DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
 # SNP filters
 MAX_DP = ["30"]
-MIN_DP = ["1", "3"]
+MIN_DP = ["3"]
 
 
 
@@ -40,11 +40,11 @@ rule all:
 #        table = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM),
 #        dp = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM),
 #        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.vcf", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP),
-#        filt_vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP),
+        filt_vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP),
         ## nQuack
 #        filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.txt", sample = SAMPLE)
         ## ANGSD
-        pca = expand("/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.ibs.gz", min_dp = MIN_DP, max_dp = MAX_DP)
+#        pca = expand("/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.ibs.gz", min_dp = MIN_DP, max_dp = MAX_DP)
 
 # =================================================================================================
 #     Rule Modules

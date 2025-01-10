@@ -167,6 +167,6 @@ ggsave(plot = p_sdp, filename = paste0(dir, "avg_geno_dp.", Sys.Date(),".jpg"),
 
 # Genotypes with data (not zero)
 genos_with_data <- rowSums(is.na(qual[,3:dim(qual)[2]]))
-hist(genos_with_data, 
+hist(genos_with_data/genotypes * 100, 
      xlab = "Number of genotypes sequenced", 
      main = "Number of genotypes sequenced per site", ylab = "Number of sites")
