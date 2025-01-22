@@ -13,7 +13,7 @@ SAMPLE = list(sample_file.filenames)
 #print(SAMPLE)
 
 # Chromosomes
-fai =  pd.read_csv("/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.fai", header = None, sep = "\t")
+fai =  pd.read_csv("/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.fai", header = None, sep = "\t")
 CHROM = list(fai[0])
 #print(CHROM)
 
@@ -43,6 +43,11 @@ rule all:
         filt_vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP),
         ## nQuack
 #        filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.txt", sample = SAMPLE)
+        ## Genotyping
+        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
+        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),
+        ## Subset for Obv study
+        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
         ## ANGSD
 #        pca = expand("/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.ibs.gz", min_dp = MIN_DP, max_dp = MAX_DP)
 
@@ -51,6 +56,7 @@ rule all:
 # =================================================================================================
 #include: "rules/mapping.smk"
 #include: "rules/calling.smk"
+include: "rules/calling_obv.smk"
 include: "rules/genotyping.smk"
 include: "rules/nquack.smk"
 include: "rules/angsd.smk"

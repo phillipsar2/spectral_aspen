@@ -17,7 +17,7 @@ data:
 
     # Path to the reference genome, using the file ideally as it is provided by the GATK bundle.
     # Path needs to be absolute! No relative path (e.g., `../ref`)!
-    genome: "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta"
+    genome: "/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta"
 
     # Path to any database of known variants (in vcf or vcf.gz format),
     # ideally as it is provided by the GATK bundle.
@@ -104,7 +104,7 @@ set-resources:
     mem_mb: 9600
     threads: 1
     runtime: 5
-  
+ 
   # ----------------------------------------------------------------------
   #     bamqc
   # ----------------------------------------------------------------------
@@ -151,9 +151,19 @@ set-resources:
     runtime: 2880
 
   # ----------------------------------------------------------------------
-  #     multiqc
+  #     updog_dips
   # ----------------------------------------------------------------------
 
-  multiqc:
-    # Additional parameter for multiqc
-    extra: ""
+  updog_dips:
+    threads: 4
+    mem_mb: 38400
+    runtime: 2880
+
+  # ----------------------------------------------------------------------
+  #     updog_trips
+  # ----------------------------------------------------------------------
+
+  updog_trips:
+    threads: 8
+    mem_mb: 76800
+    runtime: 4320
