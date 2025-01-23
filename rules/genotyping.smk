@@ -7,3 +7,32 @@ rule combine_vcfs:
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
     shell:
         "bcftools concat {input} -Oz -o {output}"
+
+
+# (19) Genotype with updog
+# Additional filters applied that exclude poor quality genotypes.
+rule updog_dips:
+    input:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp30.nocall.vcf.gz",
+        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv" 
+    output:
+        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt" 
+    params:
+        outdir = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog",
+        ploidy = "diploid"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    shell:
+        "Rscript scripts/updog.R --vcf {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4"
+
+rule updog_trips:
+    input:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp30.nocall.vcf.gz",
+        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv"
+    output:
+        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt"
+    params:
+        outdir = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog",
+        ploidy = "triploid"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    shell:
+        "Rscript scripts/updog.R --vcf {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8"

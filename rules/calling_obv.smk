@@ -11,7 +11,7 @@ rule get_snps:
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
     shell:
         """
-        bcftools view {input.vcf} --types snps --samples-file {input.samples} -Oz -o {params.out} 
+        bcftools view {input.vcf} --types snps --samples-file {input.samples} --force-samples -Oz -o {params.out} 
         """
 
 
