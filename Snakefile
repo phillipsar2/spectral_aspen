@@ -44,10 +44,13 @@ rule all:
         ## nQuack
 #        filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.txt", sample = SAMPLE)
         ## Genotyping
-        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
+#        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
         updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),
         ## Subset for Obv study
-        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
+#        merge_raw = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz",
+#        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
+#        dp = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
+         dp_filt = expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
         ## ANGSD
 #        pca = expand("/global/scratch/users/arphillips/spectral_aspen/data/angsd/rad_aspen.{min_dp}dp{max_dp}.ibs.gz", min_dp = MIN_DP, max_dp = MAX_DP)
 

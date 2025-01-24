@@ -6,12 +6,10 @@ rule get_snps:
         samples = "/global/scratch/projects/fc_moilab/aphillips/obv_aspen/sample_list.txt" 
     output:
          "/global/scratch/users/arphillips/obv_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
-    params:
-         out = "/global/scratch/users/arphillips/obv_aspen/data/vcf/rad_aspen.{chr}.snps"
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
     shell:
         """
-        bcftools view {input.vcf} --types snps --samples-file {input.samples} --force-samples -Oz -o {params.out} 
+        bcftools view {input.vcf} --types snps --samples-file {input.samples} --force-samples -Oz -o {output} 
         """
 
 
@@ -27,6 +25,7 @@ rule diagnostics:
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
     shell:
         """
+        gatk IndexFeatureFile -I {input.vcf}
         gatk VariantsToTable \
         -R {input.ref} \
         -V {input.vcf} \
@@ -51,7 +50,7 @@ rule filter_snps:
         gatk VariantFiltration \
         -V {input.vcf} \
         -filter \"QUAL < 30.0\" --filter-name \"QUAL30\" \
-        -filter \"MQ < 30.0\" --filter-name \"MQ30\" \
+        -filter \"MQ < 40.0\" --filter-name \"MQ40\" \
         -O {output}
         """
 
@@ -93,27 +92,24 @@ rule filter_depth:
         ref = config["data"]["reference"]["genome"]
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
     output:
-        dp = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf"
-    params:
-        min = "{min_dp}",
-        max = "{max_dp}"
+        dp = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.vcf"
     shell:
         """
         gatk VariantFiltration \
         -R {input.ref} \
         -V {input.vcf} \
-        -G-filter \"DP < {params.min} || DP > {params.max} \" \
-        -G-filter-name \"DP_{params.min}-{params.max}\" \
+        -G-filter \"DP < 6 || DP > 30 \" \
+        -G-filter-name \"DP_6-30\" \
         --set-filtered-genotype-to-no-call true -O {output.dp}
         """
 
 # (13) Filter snps for genotype missingness
 rule depth_nocall:
     input:
-        vcf = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf",
+        vcf = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.vcf",
     output:
-        vcf = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.nocall.vcf"
+        vcf = "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf"
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
     shell:
-        "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.1 -O {output}"
+        "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.2 -O {output}"
 
