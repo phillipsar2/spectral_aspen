@@ -20,9 +20,9 @@ rule updog_dips:
     params:
         outdir = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog",
         ploidy = "diploid"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R --vcf {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4"
+        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4"
 
 rule updog_trips:
     input:
@@ -33,6 +33,6 @@ rule updog_trips:
     params:
         outdir = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog",
         ploidy = "triploid"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R --vcf {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8"
+        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8"

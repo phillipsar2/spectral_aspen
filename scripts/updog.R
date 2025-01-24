@@ -2,7 +2,10 @@
 # Author: Alyssa Phillips
 # Date: 1/15/2025
 
-library(updog, lib.loc="/global/scratch/users/arphillips/toolz/R")
+devtools::install_github("dcgerard/updog")
+library("updog")
+devtools::install_github(repo="knausb/vcfR")
+library(vcfR)
 library(vcfR)
 library(dplyr)
 library(stringr)
@@ -62,7 +65,7 @@ key_ploidy <- merge(x = key, y = meta, by.x = "site", by.y = "Site_Code") %>%
 
 if (ploidy_level == 'diploid'){
   dips <- key_ploidy$tree[key_ploidy$Ploidy_level == "Diploid"]
-  paste0("Number of diploids: ", length(dips[complete.cases(dips)]) )
+  print(paste0("Number of diploids: ", length(dips[complete.cases(dips)]) ))
   
   refmat_dips <- refmat[ , colnames(refmat) %in% dips]
   sizemat_dips <- sizemat[,colnames(sizemat) %in% dips]
@@ -77,8 +80,8 @@ if (ploidy_level == 'diploid'){
 
   
 } else if (ploidy_level == 'triploid'){
-  dips <- key_ploidy$tree[key_ploidy$Ploidy_level == "Diploid"]
-  paste0("Number of diploids: ", length(dips[complete.cases(dips)]) )
+  trips <- key_ploidy$tree[key_ploidy$Ploidy_level == "Triploid"]
+  print(paste0("Number of Triploids: ", length(trips[complete.cases(trips)]) ))
   
   refmat_trips <- refmat[,colnames(refmat) %in% trips]
   sizemat_trips <- sizemat[,colnames(sizemat) %in% trips]
