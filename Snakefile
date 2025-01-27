@@ -44,7 +44,7 @@ rule all:
         ## nQuack
 #        filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.txt", sample = SAMPLE)
         ## Genotyping
-#        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
+        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
         updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),
         ## Subset for Obv study
 #        merge_raw = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz",

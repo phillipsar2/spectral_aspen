@@ -22,7 +22,7 @@ rule updog_dips:
         ploidy = "diploid"
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4"
+        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4 --outdir {params.outdir}"
 
 rule updog_trips:
     input:
@@ -35,4 +35,4 @@ rule updog_trips:
         ploidy = "triploid"
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8"
+        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8 --outdir {params.outdir}"

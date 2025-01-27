@@ -155,7 +155,7 @@ set-resources:
   # ----------------------------------------------------------------------
 
   updog_dips:
-    threads: 4
+    cpus_per_task: 4
     mem_mb: 38400
     runtime: 2880
 
