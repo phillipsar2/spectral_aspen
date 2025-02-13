@@ -99,13 +99,13 @@ if (ploidy_level == 'diploid'){
 # Examine genotype and SNP Quality
 pdf(paste0(outdir,"/genotype_depth_distributions.",ploidy_level,".",Sys.Date(),".pdf"))
 ## The (posterior) proportion of individuals mis-genotyped at each site
-hist(mout$snpdf$prop_mis)
+hist(mout$snpdf$prop_mis, main = "Proportion of ind mis-genotyped at each SNP")
 
 ## Overdispersion of each snp - simulations suggest dropping > 0.05
-hist(mout$snpdf$od)
+hist(mout$snpdf$od, main = "Overdispersion of each SNP")
 
 ## Bias - simulations suggest filtering 0.5 < x > 2
-hist(mout$snpdf$bias)
+hist(mout$snpdf$bias, main = "Bias at each SNP")
 
 dev.off()
 

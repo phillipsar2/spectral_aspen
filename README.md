@@ -8,6 +8,7 @@ Data source:
 
 ## Running the pipeline
 
+`rm -r .snakemake/log  .snakemake/metadata .snakemake/slurm_logs`
 `snakemake --executor slurm --profile profiles/ --use-conda --rerun-triggers input`
 
 ## Project organization

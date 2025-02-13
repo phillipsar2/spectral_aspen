@@ -113,3 +113,12 @@ rule depth_nocall:
     shell:
         "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.2 -O {output}"
 
+# (14) Combine vcfs with bcftools
+rule combine_vcfs:
+    input:
+        expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
+    output:
+        "/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.all.depth.6dp30.nocall.vcf.gz"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
+    shell:
+        "bcftools concat {input} -Oz -o {output}"

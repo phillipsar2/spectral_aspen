@@ -36,7 +36,8 @@ latency-wait: 120
 
 # Additional settings used for our purposes
 use-conda: True
-jobs: 50
+jobs: 100
+max-jobs-per-timespan: "60/1m"
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
@@ -167,3 +168,11 @@ set-resources:
     cpus_per_task: 8
     mem_mb: 76800
     runtime: 4320
+
+
+  # ----------------------------------------------------------------------
+  #     nQuack prepare
+  # ---------------------------------------------------------------------- 
+
+  prepare:
+   runtime: 300 
