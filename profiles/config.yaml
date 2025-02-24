@@ -180,3 +180,7 @@ set-resources:
   process:
    runtime: 300
    cpus_per_task: 10
+
+  infer:
+   runtime: 300
+   cpus_per_task: 10

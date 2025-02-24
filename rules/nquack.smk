@@ -23,10 +23,8 @@ rule prepare:
         tmp = "/global/scratch/users/arphillips/tmp/nquack_prep/{sample}/"
     shell:
         """
-#        mkdir -p {params.tmp}
         Rscript scripts/nquack_02prep.R {params.bam} --tmp {params.tmp}
-#        rm -r {params.tmp}
-        ""
+        """
 
 
 # (3) Process
@@ -47,6 +45,7 @@ rule infer:
         csv = "/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.rg.csv"
     output:
         csv = "/global/scratch/users/arphillips/spectral_aspen/data/nquack/model_inference/{sample}.rg.csv"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/nquack.yaml"
     params:
         samp = "{sample}.rg"
     shell:

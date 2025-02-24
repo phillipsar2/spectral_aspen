@@ -42,7 +42,8 @@ rule all:
 #        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.vcf", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP),
 #        filt_vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP),
         ## nQuack
-        prep = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/prepared/{sample}.rg.txt", sample = SAMPLE)
+#        prep = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/prepared/{sample}.rg.txt", sample = SAMPLE)
+        infer = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/model_inference/{sample}.rg.csv", sample = SAMPLE[0:99])
         ## Genotyping
 #        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
 #        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),

@@ -2,6 +2,7 @@
 #devtools::install("/global/scratch/users/arphillips/toolz/nQuack")
 library(nQuack)
 library("argparser")
+library(dplyr)
 
 getwd()
 
