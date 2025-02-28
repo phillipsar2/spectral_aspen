@@ -48,7 +48,7 @@ printshellcmds: True
 # =================================================================================================
 default-resources:
   slurm_partition: "savio3_htc" 
-  slurm_account:  "fc_mel"
+  slurm_account:  "ac_moilab"
   runtime: 60
   cores: 1
   cpus_per_task: 1
@@ -182,5 +182,9 @@ set-resources:
    cpus_per_task: 10
 
   infer:
-   runtime: 300
+   runtime: 4320
+   cpus_per_task: 10
+
+  bootstrap:
+   runtime: 4320
    cpus_per_task: 10

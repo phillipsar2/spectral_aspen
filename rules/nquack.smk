@@ -50,3 +50,17 @@ rule infer:
         samp = "{sample}.rg"
     shell:
         "Rscript scripts/nquack_04infer.R {params.samp}"
+
+# (5) Evaluate best model with scripts/nquack_05interpret.R
+
+# (6) Bootstrapping to evaluate accuracy of model
+rule bootstrap:
+    input:
+        csv = "/global/scratch/users/arphillips/spectral_aspen/data/nquack/processed/{sample}.rg.csv"
+    output:
+        csv = "/global/scratch/users/arphillips/spectral_aspen/data/nquack/bootstrap/{sample}.rg-boots.csv"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/nquack.yaml"
+    params:
+        samp = "{sample}.rg"
+    shell:
+        "Rscript scripts/nquack_06bootstrap.R {params.samp}"
