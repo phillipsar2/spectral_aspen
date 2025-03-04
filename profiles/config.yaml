@@ -86,7 +86,7 @@ set-resources:
   bwa_map:
     mem_mb: 9600
     threads: 1
-    runtime: 20
+    runtime: 60
 
   # ----------------------------------------------------------------------
   #     samtools_sort
@@ -95,7 +95,7 @@ set-resources:
   samtools_sort:
     mem_mb: 9600
     threads: 1
-    runtime: 5
+    runtime: 60
 
   # ----------------------------------------------------------------------
   #     add_rg
@@ -104,7 +104,7 @@ set-resources:
   add_rg:
     mem_mb: 9600
     threads: 1
-    runtime: 5
+    runtime: 60
  
   # ----------------------------------------------------------------------
   #     bamqc
@@ -113,7 +113,7 @@ set-resources:
   bamqc:
     mem_mb: 19200
     threads: 2
-    runtime: 10
+    runtime: 60
 
   # ----------------------------------------------------------------------
   #     bcftools

@@ -42,6 +42,7 @@ rule all:
         ## Calling
         ncbi = expand("/global/scratch/users/arphillips/spectral_aspen/raw/{srr}.fastq.gz", srr = SRR),
 #        fastp = expand("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz" , sample = SAMPLE),
+        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{srr}_stats/genome_results.txt", srr = SRR)
 #        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/genome_results.txt", sample = SAMPLE),
 #        bamqc_stats = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/stats.bamqc.txt"
 #        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM),

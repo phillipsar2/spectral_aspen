@@ -18,7 +18,7 @@ rule ncbi:
 
 rule fastqc:
     input:
-        "/global/scratch/projects/fc_moilab/PROJECTS/aspen/moi_aspen/fastq/samples/{sample}.fastq.gz"
+        "/global/scratch/projects/fc_moilab/projects/aspen/moi_aspen/fastq/samples/{sample}.fastq.gz"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/qc/fastqc/{sample}_fastqc.zip"
     params:
@@ -44,7 +44,7 @@ rule fastqc:
 # --cut_front is sliding window trimming from 5' ot 3'
 rule fastp_trim:
     input:
-#        fastq = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/moi_aspen/fastq/samples/{sample}.fastq.gz"
+#        fastq = "/global/scratch/projects/fc_moilab/projects/aspen/moi_aspen/fastq/samples/{sample}.fastq.gz"
         fastq = "/global/scratch/users/arphillips/spectral_aspen/raw/{srr}.fastq.gz"
     output:
 #        trim = temp("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz")
@@ -68,7 +68,7 @@ rule bwa_prep:
     input: 
         config["data"]["reference"]["genome"]
     output:
-        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123" 
+        index = "/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123" 
     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa-mem2.yaml"
     shell:
         """
@@ -83,7 +83,7 @@ rule bwa_prep:
 rule bwa_map:
     input:
         ref = config["data"]["reference"]["genome"],
-        index = "/global/scratch/projects/fc_moilab/PROJECTS/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123", 
+        index = "/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123", 
 #        trim = "/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz"
         trim = "/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{srr}.trim.fastq.gz"
     output:
