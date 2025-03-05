@@ -79,7 +79,7 @@ rule bwa_prep:
 
 
 # (3b) Align reads to the reference genome
-# Paired-end reads in single file
+# -p Paired-end reads in single file 
 rule bwa_map:
     input:
         ref = config["data"]["reference"]["genome"],
@@ -89,11 +89,12 @@ rule bwa_map:
     output:
 #        temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{sample}.mapped.bam")
         temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{srr}.fastq.gz")
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa_map.yaml"
+    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bwa.benchmark.txt"
     shell:
-        "~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 mem -t 1 -p {input.ref} {input.trim} |"
+#        "~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 mem -t 1 -p {input.ref} {input.trim} |"
+        "~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 mem -t 1 {input.ref} {input.trim} |"
         "samtools view -Sb > {output}"
 
 # (4) Sort bams

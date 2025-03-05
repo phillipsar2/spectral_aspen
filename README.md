@@ -4,7 +4,7 @@ Author: Alyssa Phillips
 
 Snakemake pipeline pipeline for calling variants and estimating diversity across RMBL quaking aspen. This repository follows a CookieCutter directory structure.
 
-Data source:
+Data source: [https://doi.org/10.26078/JNPN-4A13](https://doi.org/10.26078/JNPN-4A13) & SRA BioProject PRJNA1063753
 
 ## Running the pipeline
 
@@ -31,7 +31,8 @@ Data source:
 │    ├── trimmed         <- Trimmed fastqs
 │    ├── genome 	 <- Reference genome  
 │    ├── interim  	 <- Intermediate files in read mapping and SNP calling  
-│    └── processed	 <- Final vcfs for analysis  
+|    ├── backup_data	 <- Final VCFs and BAM files 
+│    └── processed	 <- Intermediate VCF files in filtering
 |  
 ├── reports 		 <- Generated analyses as HTML, PDF, or .txt.  
 ├── qc 			 <- Quality check output for raw data  
@@ -44,7 +45,7 @@ Data source:
 * Trim reads with fastp and re-evaluate quality. Reads are trimmed via sliding windows (4 bp windows, min quality of 15) and automated detection of adapters.
 
 2. Mapping
-* Map reads to the reference with bwa-mem2
+* Map reads to the reference with bwa-mem2. RMBL reads were mapped as pair-end (-p) and all other reads were mapped as single-end reads.
 * Sort and add read groups to BAM files with samtools and GATK.
 * Assess mapping quality with qualimap's bamqc (read duplication metric is incorrect)
 
@@ -55,11 +56,11 @@ Data source:
 
 4. Variant calling
 * BCFtools is used to call variants.
-	Raw SNPs: 3,942,970
-* Variants were hard filtered to keep QUAL > 30, MQ > 30, and biallelic sites
-        SNPs after hard filters: 1,413,730
+	RMBL raw SNPs: 3,942,970
+* Variants are seperately filtered for RMBL spatial dataset & spectral dataset. Variants were hard filtered to keep QUAL > 30, MQ > 30, and biallelic sites
+        RMBL SNPs after hard filters: 1,413,730
 * Multiple depth and genotype missingness filters were tested.
- 	3 < DP < 30 & 10%: 26,475 
-	1 < DP < 30 & 10%: 111,953
+ 	RMBL 3 < DP < 30 & 10%: 26,475 
+	RMBL 1 < DP < 30 & 10%: 111,953
 * Updog (https://dcgerard.github.io/updog/index.html) will be used to estimate genotypes. This software considers sequencing error, allele bias, and overdispersion. The input of updog is read counts for SNPs, so variats must be called and initially filtered prior to genotype calling.
 * After genotyping, an LD filter will be applied 
