@@ -24,8 +24,8 @@ rule fastqc:
     params:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/fastqc/{sample}",
         outdir = "/global/scratch/users/arphillips/spectral_aspen/qc/fastqc"
-    conda:
-        "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastqc.yaml"
+#   conda:
+#        "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastqc.yaml"
     resources:
         cpus_per_task=2
     shell:
@@ -49,8 +49,8 @@ rule fastp_trim:
     output:
 #        trim = temp("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{sample}.trim.fastq.gz")
         trim = temp("/global/scratch/users/arphillips/spectral_aspen/data/trimmed/{srr}.trim.fastq.gz")
-    conda:
-         "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastp.yaml"
+#    conda:
+#         "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/fastp.yaml"
 #    benchmark:
 #        "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.trim.benchmark.txt"
     shell:
@@ -69,7 +69,7 @@ rule bwa_prep:
         config["data"]["reference"]["genome"]
     output:
         index = "/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.0123" 
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa-mem2.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bwa-mem2.yaml"
     shell:
         """
         ~/toolz/bwa-mem2-2.2.1_x64-linux/bwa-mem2 index {input}
@@ -89,7 +89,7 @@ rule bwa_map:
     output:
 #        temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{sample}.mapped.bam")
         temp("/global/scratch/users/arphillips/spectral_aspen/data/interm/mapped_bam/{srr}.fastq.gz")
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bwa.benchmark.txt"
     shell:
@@ -108,7 +108,7 @@ rule samtools_sort:
     params:
 #        tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/sort_bam/{sample}"
         tmp = "/global/scratch/users/arphillips/spectral_aspen/data/interm/sorted_bam/{srr}"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/samtools.yaml"
 #    benchmark:
 #       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.sort.benchmark.txt"
     shell:
@@ -132,7 +132,7 @@ rule add_rg:
         tmp = "/global/scratch/users/arphillips/tmp/spectral_aspen/addrg/{srr}",
         sample = "{srr}",
         rg = randint(1,1000)
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
 #    benchmark:
 #       "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.add_rg.benchmark.txt"
     shell:
@@ -165,7 +165,7 @@ rule bamqc:
     params:
 #        dir = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats"
          dir = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{srr}_stats"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/qualimap.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/qualimap.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{sample}.bamqc.benchmark.txt"
     shell:
@@ -181,16 +181,14 @@ rule bamqc:
         --java-mem-size=24G
         """
 
-#        grep -h "bam file =" {params.stats_dir}/*/genome_results.txt | cut -d"=" -f2 >> {params.stats_dir}/bamlist.bamqc.txt
-#        grep -h "number of reads =" {params.stats_dir}/*/genome_results.txt | cut -d"=" -f2 >> {params.stats_dir}/numreads.bamqc.txt
-#       grep -h "GC percentage =" {params.stats_dir}/*/genome_results.txt | cut -d"=" -f2 >> {params.stats_dir}/GC.bamqc.txt
-#        grep -h "mean coverageData =" {params.stats_dir}/*/genome_results.txt | cut -d"=" -f2 >> {params.stats_dir}/meancoverage.bamqc.txt
-#        grep -h "mean mapping quality =" {params.stats_dir}/*/genome_results.txt | cut -d"=" -f2 >> {params.stats_dir}/meanMQ.bamqc.txt
-#        grep -h "number of mapped reads =" {params.stats_dir}/*/genome_results.txt | cut -d "(" -f2 >> {params.stats_dir}/perreadsmapped.bamqc.txt
-#        paste {params.stats_dir}/bamlist.bamqc.txt \
-#        {params.stats_dir}/numreads.bamqc.txt \
-#        {params.stats_dir}/GC.bamqc.txt \
-#        {params.stats_dir}/meancoverage.bamqc.txt \
-#        {params.stats_dir}/meanMQ.bamqc.txt \
-#        {params.stats_dir}/perreadsmapped.bamqc.txt | \
+#        grep -h "bam file =" */genome_results.txt | cut -d"=" -f2 > bamlist.bamqc.txt
+#        grep -h "number of reads =" */genome_results.txt | cut -d"=" -f2 > numreads.bamqc.txt
+#       grep -h "GC percentage =" */genome_results.txt | cut -d"=" -f2 > GC.bamqc.txt
+#        grep -h "mean mapping quality =" */genome_results.txt | cut -d"=" -f2 > meanMQ.bamqc.txt
+#        grep -h "number of mapped reads =" */genome_results.txt | cut -d "(" -f2 > perreadsmapped.bamqc.txt
+#        paste bamlist.bamqc.txt \
+#        numreads.bamqc.txt \
+#        GC.bamqc.txt \
+#        meanMQ.bamqc.txt \
+#        perreadsmapped.bamqc.txt | \
 #        column -s $'\t' -t >> {output}

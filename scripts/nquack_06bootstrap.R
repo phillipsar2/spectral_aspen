@@ -33,3 +33,20 @@ bout <- quackNboots(temp,
                     samplename = samp)
 
 write.csv(bout, file = paste0(outpath, samp, "-boots.csv"), row.names = FALSE)
+
+##
+## Analyze results
+## 
+
+# bootpath <- "/global/scratch/users/arphillips/spectral_aspen/data/nquack/bootstrap/"
+# 
+# samples <- list.files(path = bootpath, pattern = "*.csv" )
+# samples <- lapply(samples, function(x) gsub(x = x, pattern = "-boots.csv", replacement ="")) %>% unlist()
+# 
+# # Leave commented out unless using
+# 
+# # Row 1 = best model for original dataset
+# # Row 2 = bootstrap replicates best model
+# boots <- lapply(list.files(path = bootpath, full.names = TRUE  ), read.csv)
+# allboots <- do.call(rbind, boots)
+# str(allboots)

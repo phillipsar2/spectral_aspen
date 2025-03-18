@@ -25,11 +25,11 @@ files <- list.files(path = dir, pattern = ".table")
 # 
 
 
-qual <- read.table(paste0(dir, files[2]), header = T)
+qual <- read.table(paste0(dir, files[1]), header = T)
 dim(qual)
 str(qual)
 
-pdf(paste0(dir, "alignment_quality.chr2.",Sys.Date(),".pdf"))
+pdf(paste0(dir, "alignment_quality.chr1.",Sys.Date(),".pdf"))
 
 qual %>%
   ggplot(aes(x=QUAL)) +
@@ -80,7 +80,7 @@ dplyr::filter(qual, QUAL > 30, MQ > 50, DP < 50, DP > 20) %>%
 dir <- as.character("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/")
 files <- list.files(path = dir, pattern = ".table")
 
-qual <- read.table(paste0(dir, files[2]), header = T)
+qual <- read.table(paste0(dir, files[1]), header = T)
 # qual <- read.table("~/aspen/radseq/erincar/rad_aspen.all.filtered.nocall.table" , header = T, skip = 1)
 head(qual)
 str(qual)
@@ -89,7 +89,7 @@ dim(qual)
 qual[1:10,1:10]
 
 # Exclude HSYDC_448_18.DP
-qual <- qual[,colnames(qual) != "HSYDC_448_18.DP"]
+# qual <- qual[,colnames(qual) != "HSYDC_448_18.DP"]
 
 genotypes <- dim(qual)[2] - 2
 
@@ -150,7 +150,6 @@ dev.off()
 # Depth per site
 site_dp <- rowSums(qual[3:dim(qual)[2]], na.rm = T)
 
-ggplot(aes())
 
 # hist(site_dp, xlim = c(0, 400), breaks = 50)
 p_sdp <- as.data.frame(site_dp) %>% 
@@ -165,8 +164,10 @@ p_sdp <- as.data.frame(site_dp) %>%
 ggsave(plot = p_sdp, filename = paste0(dir, "avg_geno_dp.", Sys.Date(),".jpg"),
        width = 5, height = 4, units = "in")
 
-# Genotypes with data (not zero)
-genos_with_data <- rowSums(is.na(qual[,3:dim(qual)[2]]))
-hist(genos_with_data/genotypes * 100, 
-     xlab = "Number of genotypes sequenced", 
-     main = "Number of genotypes sequenced per site", ylab = "Number of sites")
+# Genotypes without data (not zero)
+miss <- rowSums(qual[,3:dim(qual)[2]] == 0)
+hist(miss/genotypes * 100,
+     xlab = "Missing data per site", ylab = "Number of sites",
+     breaks = 20)
+
+sum(miss <= 10)

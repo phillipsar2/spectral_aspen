@@ -1,9 +1,10 @@
 # (7) make bam list
 rule bamlist:
     input:
-       bams = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.rg.bam", sample = SAMPLE)
+#       bams = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.rg.bam", sample = SAMPLE)
+       bams = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{sample}.rg.bam", sample = SPEC_SAMP)
     output:
-       bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{date}.bamlist.txt"
+       bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/spec_samp.bamlist.txt"
     params:
        path = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/"
     shell:
@@ -17,12 +18,12 @@ rule bamlist:
 rule mpileup:
     input:
         ref = config["data"]["reference"]["genome"],
-        bamlist = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{date}.bamlist.txt", date = DATE) 
+#        bamlist = expand("/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/{date}.bamlist.txt", date = DATE) 
+        bamlist = "/global/scratch/users/arphillips/spectral_aspen/data/interm/addrg/spec_samp.bamlist.txt"
     output:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
     params:
         chr = "{chr}"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
 #    benchmark:
 #         "/global/scratch/users/arphillips/spectral_aspen/benchmarks/{chr}.mpileup.benchmark.txt"
     shell:
@@ -40,7 +41,7 @@ rule get_snps:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz"
     output:
          "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    conda: "/global/home/users/arphillips/.conda/envs/gatk"
     shell:
         """
         gatk SelectVariants \
@@ -60,7 +61,7 @@ rule diagnostics:
         ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    conda: "gatk"
     shell:
         """
         gatk VariantsToTable \
@@ -85,8 +86,8 @@ rule filter_snps:
         ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz"
     output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf.gz"
+    conda: "gatk"
     shell:
         """
         gatk VariantFiltration \
@@ -100,10 +101,10 @@ rule filter_snps:
 rule filter_nocall:
     input:
         ref = config["data"]["reference"]["genome"],
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.snps.vcf.gz"
     output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf.gz"
+    conda: "gatk"
     shell:
         """
         gatk SelectVariants -V {input.vcf} --exclude-filtered true  --restrict-alleles-to BIALLELIC -O {output}
@@ -112,11 +113,11 @@ rule filter_nocall:
 # (14) Extract genotype depth across samples to determine DP cutoff
 rule depth:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf.gz",
         ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+    conda: "gatk"
     shell:
         """
         gatk VariantsToTable \
@@ -136,14 +137,14 @@ rule depth:
 # 6 < DP < 30 with 10% missing is too strict - only 15 SNPs
 rule filter_depth:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.filtered.nocall.vcf.gz",
         ref = config["data"]["reference"]["genome"]
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
     output:
-        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf"
+        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf.gz"
     params:
         min = "{min_dp}",
         max = "{max_dp}"
+    conda: "gatk"
     shell:
         """
         gatk VariantFiltration \
@@ -157,12 +158,14 @@ rule filter_depth:
 # (17) Filter snps for genotype missingness (10%)
 rule depth_nocall:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.{min_dp}dp{max_dp}.vcf.gz",
     output:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.vcf",
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/gatk.yaml"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz",
+    params:
+        miss = "{miss}"
+    conda: "gatk"
     shell:
-        "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction 0.1 -O {output}"
+        "gatk SelectVariants -V {input} --exclude-filtered true --max-nocall-fraction {params.miss} -O {output}"
 
 # (18) Combine RAW vcfs with bcftools
 rule combine_rawvcfs:
@@ -170,6 +173,16 @@ rule combine_rawvcfs:
         expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM)
     output:
         "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz"
-    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
+#    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
     shell:
         "bcftools concat {input} -Oz -o {output}"
+
+# (19) Combine vcfs with bcftools
+rule combine_vcfs:
+    input:
+        expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.vcf", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP)
+    output:
+         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz"
+#     conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/bcftools.yaml"
+    shell:
+         "bcftools concat {input} -Oz -o {output}"
