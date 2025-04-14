@@ -27,6 +27,7 @@ SRR = list(srr_file[0])
 ## Spectra genotypes
 spectra_sampl = pd.read_csv("metadata/spectra_genotypes.csv")
 SPEC_SAMP = list(spectra_sampl["Accession"])
+print(SPEC_SAMP)
 
 # Chromosomes
 fai =  pd.read_csv("/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.fai", header = None, sep = "\t")
@@ -38,11 +39,11 @@ DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
 # SNP filters
 ## Depth
-MAX_DP = ["20","20"]
-MIN_DP = ["1","3"]
+MAX_DP = ["30"]
+MIN_DP = ["1"]
 
 ## Missing data per SNP (10%, 20%, and 25%) 
-MISS = ["0.25", "0.2"] 
+MISS = ["0.25", "0.2", "0.1"] 
 
 
 
@@ -59,14 +60,15 @@ rule all:
 #        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.raw.vcf.gz", chr = CHROM),
 #        table = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM),
 #        dp = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM),
-        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS),
-#        comb_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.{min_dp}dp{max_dp}.nocall.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP),
-        comb_raw =  "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz"
+#        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS),
+#        comb_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.{min_dp}dp{max_dp}.per{miss}.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS)
+#        comb_raw =  "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz"
         ## nQuack
 #        prep = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/prepared/{sample}.rg.txt", sample = PLOID_SAMP),
 #        infer = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/model_inference/{sample}.rg.csv", sample = PLOID_SAMP)
 #        boot = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/bootstrap/{sample}.rg-boots.csv", sample = PLOID_SAMP)
         ## Genotyping
+        gbs2ploidy = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv", spec_samp = SPEC_SAMP)
 #        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
 #        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),
         ## Subset for Obv study
@@ -79,8 +81,8 @@ rule all:
 #     Rule Modules
 # =================================================================================================
 #include: "rules/mapping.smk"
-include: "rules/calling.smk"
+#include: "rules/calling.smk"
 #include: "rules/calling_obv.smk"
-#include: "rules/genotyping.smk"
+include: "rules/genotyping.smk"
 #include: "rules/nquack.smk"
 #include: "rules/angsd.smk"

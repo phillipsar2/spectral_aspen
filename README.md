@@ -49,12 +49,7 @@ Data source: [https://doi.org/10.26078/JNPN-4A13](https://doi.org/10.26078/JNPN-
 * Sort and add read groups to BAM files with samtools and GATK.
 * Assess mapping quality with Qualimap's bamqc.
 
-3. Ploidy determination
-* Ploidy was previously estimated for a majority of samples using [gbs2ploidy](https://doi.org/10.32614/CRAN.package.gbs2ploidy)
-* Ploidy will be validated using [nQuack](https://github.com/mgaynor1/nQuack).
-* For nQuack, BAMs are filtered for MQ > 10 and repetitive regions annotated by EDTA are excluded. 
-
-4. Variant calling
+3. Variant calling
 * BCFtools is used to call variants.
 	RMBL raw SNPs: 3,942,970
         Spectral raw SNPs: 1,504,711
@@ -64,7 +59,20 @@ Data source: [https://doi.org/10.26078/JNPN-4A13](https://doi.org/10.26078/JNPN-
 * Multiple depth and genotype missingness filters were tested.
  	RMBL 3 < DP < 30 & 10%: 26,475 
 	RMBL 1 < DP < 30 & 10%: 111,953
-        Spectral 3 < DP < 20 & 10%:
-        Spectral 1 < DP < 20 & 10%: 
+        Spectral 1 < DP < 30 & 10%: 51,158
+        Spectral 1 < DP < 30 & 20%: 175,489
+        Spectral 1 < DP < 30 & 25%: 221,132
+
+4. Ploidy determination
+* Ploidy was previously estimated for a majority of samples using [gbs2ploidy](https://doi.org/10.32614/CRAN.package.gbs2ploidy)
+* We are replicating these analyses using heterozygous sites only, as called by `bcftools call`.
+
+5. Genotyping
 * Updog (https://dcgerard.github.io/updog/index.html) will be used to estimate genotypes. This software considers sequencing error, allele bias, and overdispersion. The input of updog is read counts for SNPs, so variats must be called and initially filtered prior to genotype calling.
-* After genotyping, an LD filter will be applied 
+* After genotyping, an LD filter will be applied
+
+6. Kinship matrix for Spectral Data Gentoypes
+
+7. Modified MAR on RMBL datasets 
+* Run the MAR pipeline assuming everything is diploid genotypes. We are running this just for the sampling. The script is `scripts/mar.R`.
+* Then we use a custom script to estimate nucleotide diversity and watterson's theta for the sampled groups.
