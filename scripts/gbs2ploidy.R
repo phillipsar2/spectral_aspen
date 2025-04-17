@@ -28,9 +28,9 @@ out <- as.character(argv$out)
 
 # (1) Load vcf
 # vcf <- read.vcfR("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz",
-                 # verbose = FALSE )
+#                  verbose = FALSE,  )
 # vcf <- read.vcfR("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.1dp30.per0.25.vcf.gz",
-                 # verbose =F)
+#                  verbose =F)
 vcf <- read.vcfR(vcffile, verbose = F)
 vcf
 
@@ -41,6 +41,7 @@ vcf
 # (2) Extract heterozygous sites from vcf
 gt <- extract.gt(vcf)
 hets <- is_het(gt)
+hist(colSums(hets))
 # Censor non-heterozygous positions by changing them to NAs
 is.na(vcf@gt[,-1][!hets]) <- TRUE
 
@@ -55,8 +56,6 @@ vcf
 ad <- extract.gt(vcf, element = "AD", as.numeric = F)
 dim(ad)
 
-# ad <- ad[,1]
-
 ## Subset flow cytometry samples for testing
 # flow_samp <- colnames(ad) %in% flow_meta$accession
 # ad <- ad[, flow_samp]
@@ -67,10 +66,10 @@ dim(ad)
 # hist(sites, xlab = "sites with data", breaks = 10)
 
 ## Write samples that failed filtering to a file
-if ( sum(!is.na(ad)) < 10000 ){
-  write.table("fail", out,
-              row.names = F, col.names = F,)
-} else {
+# if ( sum(!is.na(ad)) < 10000 ){
+#   write.table("fail", out,
+#               row.names = F, col.names = F,)
+# } else {
   refmat <- masplit(as.matrix(ad), record = 1, sort = 0)
   altmat <- masplit(as.matrix(ad), record = 2, sort = 0)
   
@@ -89,10 +88,10 @@ if ( sum(!is.na(ad)) < 10000 ){
     dplyr::select(quantile, value, L1, allelic_ratio)
   colnames(propOut_df) <- c("quantile", "proportion", "sample", "allelic_ratio")
   write.csv(propOut_df, out, row.names = F)
-}
+# }
 
-# fail <- colnames(ad)[sites < 10000]
-# write.table(fail, "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/rad_aspen_predictions.mindp6.10ksites.droppedsamples.csv", 
+# fail <- colnames(ad)[sites < 3000]
+# write.table(fail, "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/rad_aspen_predictions.mindp6.10ksites.droppedsamples.csv",
 #           row.names = F, sep = ",", col.names = F,)
 
 ## Apply filter
@@ -110,48 +109,30 @@ if ( sum(!is.na(ad)) < 10000 ){
 ## Plot allele ratio
 # ar <- altmat/(altmat + refmat)
 
-# pdf("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/rad_aspen.mindp6.10ksites.raw_allelicratio.plots.pdf")
-# par(mfrow=c(4,4))
-# for(i in 1:dim(ar)[2]){ # change number from 1 to 9
-#   hist(ar[,i], 
-#        # axes=FALSE, 
-#        xlab="Observed allelic ratio", 
-#        ylab="Count",
-#        main = colnames(ar)[i],
-#        # xlim = c(0.1,0.9), 
-#        breaks = 20)
-# }
-# dev.off()
+pdf("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/RMBL.mindp6..raw_allelicratio.plots.pdf")
+par(mfrow=c(4,4))
+for(i in 1:dim(ar)[2]){ # change number from 1 to 9
+  hist(ar[,i],
+       # axes=FALSE,
+       xlab="Observed allelic ratio",
+       ylab="Count",
+       main = colnames(ar)[i],
+       # xlim = c(0.1,0.9),
+       breaks = 20)
+}
+dev.off()
 
 
 ## Average depth per genotype
-# dp <- extract.gt(vcf, element = "DP", as.numeric = T) %>% 
-#   colMeans(na.rm = T) 
+# dp <- extract.gt(vcf, element = "DP", as.numeric = T) %>%
+#   colMeans(na.rm = T)
 # dp <- dp[flow_samp]
 # hist(dp, breaks = 20, xlim=c(0,35))
 
 ## Combine all dataframe stats
-# qual_stats <- data.frame(dp, sites, miss, avg_alt_depth, avg_ref_depth)
+# qual_stats <- data.frame(dp, sites, avg_alt_depth, avg_ref_depth)
 # qual_stats$sample <- rownames(qual_stats)
-
-# (4) Infer ploidy ----
-##  Bayesian inference of allelic proportions
-# propOut <- estprops(cov1 = as.matrix(altmat[,1]), # [SNPs, ind], non-ref
-#                     cov2 = as.matrix(refmat[,1]), # ref allele
-#                     props = c(0.33, 0.5, 0.66),
-#                     mcmc.nchain = 3, 
-#                     mcmc.steps = 1000, mcmc.burnin = 100, mcmc.thin = 2)
-
-## Export propOut object. Need to convert list to table
-# names(propOut) <- colnames(ad)
-# propOut_long <- lapply(propOut, function(x){ as.data.frame(x) %>%
-#     tibble::rownames_to_column(var = "allelic_ratio") %>%
-#     pivot_longer(cols = `2.5%`:`97.5%`, names_to ="quantile", values_to = "proportion") } )
-# 
-# propOut_df <- reshape2::melt(propOut_long) %>%
-#   dplyr::select(quantile, value, L1, allelic_ratio)
-# colnames(propOut_df) <- c("quantile", "proportion", "sample", "allelic_ratio")
-# write.csv(propOut_df, out, row.names = F)
+# write.csv(qual_stats, "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/RMBL_qualitystats.csv" )
 
 
 ## Import propOut values ----

@@ -1,8 +1,8 @@
 # Determine ploidy
 rule gbs2ploidy:
     input:
-#        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz"
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.1dp30.per0.25.vcf.gz"
+        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz"
+#        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.1dp30.per0.25.vcf.gz"
     output:
          "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv"
     params:

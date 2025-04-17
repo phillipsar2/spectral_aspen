@@ -48,7 +48,7 @@ printshellcmds: True
 # =================================================================================================
 default-resources:
   slurm_partition: "savio3_htc" 
-  slurm_account:  "ac_moilab"
+  slurm_account:  "fc_mel"
   runtime: 60
   cores: 1
   cpus_per_task: 1
