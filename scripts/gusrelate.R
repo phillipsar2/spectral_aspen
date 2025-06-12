@@ -17,12 +17,12 @@ library(dplyr)
 # (1) Load data ----
 # Specify dataset
 ## SWUS
-# dataset <- "WUSG"
-# file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/spectral_aspen.all.1dp30.per0.1.vcf.gz", verbose = FALSE )
+dataset <- "WUSG"
+file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/spectral_aspen.all.1dp30.per0.1.vcf.gz", verbose = FALSE )
 
 ## RMBL
-dataset <- "RMBL"
-file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz", verbose = F)
+# dataset <- "RMBL"
+# file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz", verbose = F)
 
 # Load data
 vcf <- read.vcfR(file, verbose = FALSE )
@@ -242,24 +242,24 @@ meta$sample[!meta$sample %in% colnames(vcf.thin@gt)]
 
 ## Remove invariant sites - not needed
 ## MAF
-min_mac <- function(vcfR,
-                    min.mac=NULL){
-  
+# min_mac <- function(vcfR,
+                    # min.mac=NULL){
+
   #if vcfR is not class vcfR, fail gracefully
   if (!inherits(vcfR, what = "vcfR")){
     stop("specified vcfR object must be of class 'vcfR'")
   }
-  
+
   #if all input SNPs are not bi-allelic, minor allele count can't be calculated accurately, let user know
   if (max(nchar(gsub(",","",vcfR@fix[,"ALT"])),na.rm=T) > 1){
     stop("Input vcf contains SNPs with > 2 alleles. MAC is calculated under a strict assumption that a single SNP can only possess two alleles. Please use 'filter_biallelic(vcfR)' to remove multi-allelic sites before implementing a MAC filter.")
   }
-  
+
   if (is.null(min.mac)){
-    
+
     #print message
     message("no filtering cutoff provided, vcf will be returned unfiltered")
-    
+
     #convert vcfR to matrix and make numeric
     gt.matrix<-vcfR::extract.gt(vcfR)
     missingness.og<-sum(is.na(gt.matrix)) #store missingness
@@ -269,12 +269,12 @@ min_mac <- function(vcfR,
     gt.matrix[gt.matrix == "1/1"]<-2
     class(gt.matrix) <- "numeric"
     missingness.new<-sum(is.na(gt.matrix)) #store missingness after the conversion
-    
+
     #if unrecognized genotype values were present throw an error
     if (missingness.og != missingness.new){
       stop("Unrecognized genotype values in input vcf. Only allowed non-missing genotype inputs are '0/0','0/1','1/0','1/1'.")
     }
-    
+
     #calc sfs
     sfs<-rowSums(gt.matrix, na.rm = TRUE)
     #fold sfs
@@ -284,34 +284,34 @@ min_mac <- function(vcfR,
         sfs[i]<-(sum(!is.na(gt.matrix[i,]))*2 - sfs[i])
       }
     }
-    
+
     #hist folded mac with cutoff shown
     graphics::hist(sfs,
                    main="folded SFS",
                    xlab = "MAC")
-    
+
     #return unfiltered vcf
     return(vcfR)
-    
+
   }
-  
+
   else{
-    
+
     #if specified min.mac is not numeric, fail gracefully
     if (!inherits(min.mac, what = "numeric")){
       stop("specified min.mac must be numeric")
     }
-    
+
     #convert vcfR to matrix and make numeric
     gt.matrix<-vcfR::extract.gt(vcfR)
     gt.matrix[gt.matrix == "0/0"]<-0
     gt.matrix[gt.matrix == "0/1"]<-1
     gt.matrix[gt.matrix == "1/1"]<-2
     class(gt.matrix) <- "numeric"
-    
+
     #calc sfs
     sfs<-rowSums(gt.matrix, na.rm = TRUE)
-    
+
     #fold sfs
     for (i in 1:length(sfs)) {
       if (sfs[i] <= sum(!is.na(gt.matrix[i,]))){}
@@ -319,28 +319,28 @@ min_mac <- function(vcfR,
         sfs[i]<-(sum(!is.na(gt.matrix[i,]))*2 - sfs[i])
       }
     }
-    
+
     #hist folded mac with cutoff shown
     graphics::hist(sfs,
                    main="folded SFS",
                    xlab = "MAC")
     graphics::abline(v=min.mac-1,
                      col="red")
-    
+
     #calculate % of SNPs to be removed
     p<-round((sum(sfs < min.mac)/length(sfs))*100, 2)
-    
+
     #print message to user
     message(p, "% of SNPs fell below a minor allele count of ", min.mac, " and were removed from the VCF")
-    
+
     #filter vcfR
     vcfR <- vcfR[sfs >= min.mac,]
-    
+
     #return vcf object
     return(vcfR)
-    
+
   }
-  
+
 }
 
 # vcf.maf <- min_mac(vcf.sub, min.mac = 2)
@@ -388,8 +388,6 @@ dim(grm_mat)
 heat <- pheatmap(grm_mat, fontsize = 4)
 ggsave(heat, filename = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gusrelate/",dataset,".grm.heatmap.",Sys.Date(),".jpeg"), 
        height = 20, width = 20, units = "in")
-
-
 
 ## Plot with no diagonal
 diag(grm_mat) <- NA
