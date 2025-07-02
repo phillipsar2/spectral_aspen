@@ -207,6 +207,16 @@ distance_thin <- function(vcfR,
 vcf.thin <- distance_thin(vcf_maf, min.distance = 500)
 vcf.thin
 
+## Subset to genotypes with ploidy data
+ploidy_meta <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/RMBL.ploidycalls.2025-04-17.csv")
+keep_col <- colnames(vcf.thin@gt) %in% ploidy_meta$sample
+keep_col[1] <- TRUE # FORMAT column
+vcf.thin@gt <- vcf.thin@gt[,keep_col]
+dim(vcf.thin@gt)[2] == dim(ploidy_meta)[1] + 1
+
+## Save VCF
+write.vcf(vcf.thin, "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/filtered.RMBL.vcf")
+
 ## Extract genotypes
 gt <- extract.gt(vcf.thin)
 gt[1:5,1:5]
@@ -237,17 +247,17 @@ dim(gt_sub)
 
 ## Write to file without rownames or colnames. Save rownames and colnames to other files.
 write.table(gt_sub,
-            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.all.thinned.tsv",
+            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.all.thinned.tsv",
             row.names = F, col.names = F, sep = "\t", quote = F)
 write.table(colnames(gt_sub),
-            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.colnames.tsv",
+            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.colnames.tsv",
             row.names = F, col.names = F, sep = "\t")
 write.table(gt_sub[,1],
-            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.pos.tsv",
+            "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.pos.tsv",
             row.names = F, col.names = F, sep = "\t")
 
 # Prepare Geographic data ----
-geno_names <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.colnames.tsv")
+geno_names <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.colnames.tsv")
 site_names <- str_split(geno_names$V1, pattern = "_", simplify =T)[,1]
 
 meta <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv")
@@ -277,16 +287,14 @@ head(meta_sub_order)
 ## set ID to id number
 meta_sub_order$ID <- seq(from = 1, to = length(meta_sub_order$ID), by = 1)
 
-colnames(gt_cont) == meta_sub_order$ID
-
 ## export
 write.csv(meta_sub_order, 
-          file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/mar.latlon.csv",
+          file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.latlon.csv",
           row.names = F, quote = F)
 
 # Run MAR pipeline ----
-geno_file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.all.thinned.tsv"
-geo_file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/mar.latlon.csv"
+geno_file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.all.thinned.tsv"
+geo_file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.latlon.csv"
 dir = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/", Sys.Date())
 
 dir.create(dir)
@@ -307,7 +315,7 @@ MARPIPELINE(name = "RMBL_aspen",
 library(stringr)
 library(dplyr)
 
-dir = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-05-06/")
+dir = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/")
 list.files(dir)
 
 load(paste0(dir, "gm_RMBL_aspen.rda" ))
@@ -326,14 +334,14 @@ str(mardflist)
 samplingtype <- c("random","inwards","outwards","southnorth","northsouth")
 
 # head(mardflist$inwards$extent) # boundaries; put each value into rowcol_extent to get lat long box
-length(mardflist$northsouth$extent)
+length(mardflist$southnorth$extent)
 
 # coor <- str_split(mardflist$random$extent[1], pattern = ";", simplify = T) %>% as.numeric()
 # mar:::.rowcol_extent(gm$maps, bbox = coor)
 # mar:::.rowcol_extent(gm$maps, bbox = c(16,16,20,20))
 # df <- mar:::.rowcol_extent(gm$maps, bbox = unlist(coor))
 
-coor_list <- lapply(mardflist$northsouth$extent, function(x){ str_split(x, pattern = ";", simplify = T) })
+coor_list <- lapply(mardflist$southnorth$extent, function(x){ str_split(x, pattern = ";", simplify = T) })
 coor_num <- lapply(coor_list, as.numeric)
 coor_df <- lapply(coor_num, function(x){ mar:::.rowcol_extent(gm$maps, bbox = unlist(x)) })
 coor_mat <- lapply(coor_df, function(x) { c(x@xmin, x@xmax, x@ymin, x@ymax) })
@@ -353,7 +361,7 @@ names_id <- lapply(coor_num, function(x){ mar:::.rowcol_cellid(gm$maps, bbox = u
 # which(gm$maps$cellid %in% names_id[[370]])
 names_df <- lapply(names_id, function(x){ which(gm$maps$cellid == x)}) # convert to genotype ID
 
-geno_names <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/mar.genomat.colnames.tsv")
+geno_names <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.colnames.tsv")
 names_stacked <- lapply(names_df, function(x){ paste( geno_names[ unlist(x) ,] , collapse=',')  })
 # str_split(names_stacked, pattern = ",") # how to undo
 
@@ -361,4 +369,4 @@ mar_ouput_df <- data.frame(coor_mat,
                            trees_in_grid = unlist(names_stacked))
 head(mar_ouput_df)
 
-write.table(mar_ouput_df, paste0(dir, "northsouth", ".mar_output_df.tsv"), sep = "\t", row.names = F)
+write.table(mar_ouput_df, paste0(dir, "southnorth", ".mar_output_df.tsv"), sep = "\t", row.names = F)

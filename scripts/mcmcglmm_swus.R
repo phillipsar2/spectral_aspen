@@ -13,9 +13,22 @@ library(Matrix)
 library(parallel)
 
 # Resources
-# https://devillemereuil.legtux.org/wp-content/uploads/2021/09/tuto_en.pdf
-# https://wildanimalmodels.org/docs/univariate/mcmcglmm/fixed_random_effects/#computing-heritability-without-accounting-for-fixed-effects
+## On general MCMCglmm usage
+# https://math.umd.edu/~slud/s770/LecSlides/Lecs19to26/CourseNotesMCMCglmm.pdf
 
+## Moving from lme4 to MCMCglmm
+# https://github.com/tmalsburg/MCMCglmm-intro
+
+## On estimating heritability and animal models
+# https://wildanimalmodels.org/docs/univariate/mcmcglmm/fixed_random_effects/#computing-heritability-without-accounting-for-fixed-effects
+# https://devillemereuil.legtux.org/wp-content/uploads/2021/09/tuto_en.pdf
+
+## On properly extracting predicted values
+# https://tomhouslay.com/wp-content/uploads/2017/02/indivvar_plasticity_tutorial_mcmcglmm1.pdf
+
+## On DIC scores and model selection
+# https://deepthoughtsandsilliness.blogspot.com/2007/12/focus-on-dic.html
+# https://st540.wordpress.ncsu.edu/files/2020/03/compare.pdf
 
 # (0) Load data ----
 ## Phenotype data
@@ -29,6 +42,8 @@ K <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/dat
                 row.names = 1, sep = ",", header = T)
 K[1:5,1:5]
 dim(K)
+
+pheatmap::pheatmap(K)
 
 ### Change names to genotype IDs
 key <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/metadata/spectra_genotypes.csv")
@@ -504,8 +519,13 @@ ggplot(h2_df, aes(x = wv, y = median)) +
   theme_bw() +
   geom_line(aes(y = lower_ci), col = "gray") +
   geom_line(aes(y = upper_ci), col = "gray") +
-  ylab("Median h2") + xlab("Wavelength") + ggtitle("2023") +
+  ylab((expression('h' ^ 2))) + 
+  xlab("Wavelength (nm)") + 
+  # ggtitle("2023") +
   scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200))
+
+ggsave("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/h2_vs_wavelength_plot.pdf",
+       height = 4, width = 6, units = "in")
 
 ### 2022
 h2_files_22 <- Sys.glob("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2022/*/*.csv")
@@ -525,14 +545,14 @@ ggplot(h2_df_22, aes(x = wv, y = median)) +
   theme_bw() +
   geom_line(aes(y = lower_ci), col = "gray") +
   geom_line(aes(y = upper_ci), col = "gray") +
-  ylab("Median h2") + xlab("Wavelength") + ggtitle("2022") +
+  ylab("Median h2") + xlab("Wavelength (nm)") + ggtitle("2022") +
   scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200))
 
 
 # (6) Effect sizes ----
 ## Ploidy effect sizes
-n_wavelengths <- colnames(sv_sub_pl) %>% str_count("w") %>% sum() - 1 
 mod_files <- Sys.glob("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/*/mod.*.rds")
+n_wavelengths <- length(mod_files)
 
 ploidy_eff <- matrix(NA, nrow = n_wavelengths, ncol = 4)
 
@@ -555,8 +575,13 @@ ggplot(ploidy_eff_num, aes(x = wv, y= median)) +
   theme_bw() +
   geom_line(aes(y = lower), col = "gray") +
   geom_line(aes(y = upper), col = "gray") +
-  ylab("Median effect of triploidy") + xlab("Wavelength (nm)") + ggtitle("2023") +
-  scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200))
+  ylab("Effect of triploidy") + xlab("Wavelength (nm)") +
+  # ggtitle("2023") +
+  scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200)) + 
+  geom_hline(yintercept = 0)
+
+ggsave("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/effoftriploidy_vs_wavelength_plot.pdf",
+       height = 4, width = 6, units = "in")
 
 # Individual models
 random_eff <- apply(mod.state$VCV, 2, median)

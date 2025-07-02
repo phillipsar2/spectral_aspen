@@ -22,7 +22,7 @@ rule gbs2ploidy:
 rule updog_dips:
     input:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp30.nocall.vcf.gz",
-        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv" 
+#        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv" 
     output:
         "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt" 
     params:
@@ -30,12 +30,12 @@ rule updog_dips:
         ploidy = "diploid"
 #    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 4 --outdir {params.outdir}"
+        "Rscript scripts/updog.R {input.vcf} --ploidy {params.ploidy} --cores 4 --outdir {params.outdir}"
 
 rule updog_trips:
     input:
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.depth.3dp30.nocall.vcf.gz",
-        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv"
+#        meta = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv"
     output:
         "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt"
     params:
@@ -43,4 +43,4 @@ rule updog_trips:
         ploidy = "triploid"
 #    conda: "/global/scratch/projects/fc_moilab/aphillips/aspen_snakemake/envs/updog.yaml"
     shell:
-        "Rscript scripts/updog.R {input.vcf} --meta {input.meta} --ploidy {params.ploidy} --cores 8 --outdir {params.outdir}"
+        "Rscript scripts/updog.R {input.vcf} --ploidy {params.ploidy} --cores 8 --outdir {params.outdir}"

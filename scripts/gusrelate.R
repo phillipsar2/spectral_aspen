@@ -1,4 +1,4 @@
-### Title: GUSrelate
+### Title: GUSrelate - SWUS + RMBL
 ### Author: Alyssa Phillips
 ### Date: 1/27/2025
 
@@ -13,6 +13,7 @@ library(pheatmap)
 # install.packages("egg")
 library(egg)
 library(dplyr)
+library(pheatmap)
 
 # (1) Load data ----
 # Specify dataset
@@ -384,10 +385,16 @@ ggsave(filename = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_
 
 # (6) Plot GRM ----
 grm_mat <- grm$extractGRM(name = "GRM_VR")
+
+# grm_mat <- read.table("/global/scratch/projects/fc_moilab/aphillips/obv_aspen/data/gusrelate/grm.filt.LD.2025-01-27.csv", sep = ",", header =T, row.names = 1)
+
 dim(grm_mat)
 heat <- pheatmap(grm_mat, fontsize = 4)
 ggsave(heat, filename = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gusrelate/",dataset,".grm.heatmap.",Sys.Date(),".jpeg"), 
        height = 20, width = 20, units = "in")
+
+# ggsave(heat, filename = paste0("/global/scratch/projects/fc_moilab/aphillips/obv_aspen//data/gusrelate/obv.grm.heatmap.",Sys.Date(),".jpeg"), 
+       # height = 20, width = 20, units = "in")
 
 ## Plot with no diagonal
 diag(grm_mat) <- NA
