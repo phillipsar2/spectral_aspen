@@ -58,7 +58,8 @@ rule all:
 #        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{srr}_stats/genome_results.txt", srr = SPEC_SAMP),
 #        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/genome_results.txt", sample = SAMPLE),
 #        bamqc_stats = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/stats.bamqc.txt"
-        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.raw.gvcf.gz", chr = CHROM, dataset = DATASET),
+#        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.raw.gvcf.gz", chr = CHROM, dataset = DATASET),
+        vcftools_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz", chr = CHROM, dataset = DATASET)
 #        table = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM),
 #        dp = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM),
 #        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS),

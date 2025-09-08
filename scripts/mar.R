@@ -348,6 +348,7 @@ coor_mat <- lapply(coor_df, function(x) { c(x@xmin, x@xmax, x@ymin, x@ymax) })
 
 coor_mat <- matrix(unlist(coor_mat), ncol = 4, byrow = TRUE)
 colnames(coor_mat) <- c("xmin", "xmax", "ymin", "ymax") 
+head(coor_mat)
 
 # Get individuals within each grid ----
 
@@ -370,3 +371,41 @@ mar_ouput_df <- data.frame(coor_mat,
 head(mar_ouput_df)
 
 write.table(mar_ouput_df, paste0(dir, "southnorth", ".mar_output_df.tsv"), sep = "\t", row.names = F)
+
+# Create population file for pixy ----
+output_files <- list.files(path = dir, pattern = "*.mar_output_df.tsv")
+
+output_df <- read.table(paste0(dir, output_files[1]), header = T)
+output_list <- lapply(output_df$trees_in_grid, function(x){str_split(x,pattern = ",", simplify = T)})
+
+names(output_list) <- 1:length(output_list)
+
+pop_df <- data.frame(sample = unlist(output_list),
+                     pop = rep( names(output_list), lapply(output_list, length))
+                     ) %>%
+  arrange(pop)
+pop_df
+colnames(pop_df) <- NULL # remove header
+
+write.table(pop_df, paste0(dir, "populations.", Sys.Date(), ".txt"), quote = F, row.names = F)
+
+
+#################################
+
+# Manually create bed file with window intervals
+# sizes <- c(10, 50) # 10k, 50k
+# fai <- read.table("/global/scratch/projects/fc_moilab/projects/aspen/genome/CAM1604/Populus_tremuloides_var_CAM1604-4_HAP1_V2_release/Populus_tremuloides_var_CAM1604-4/sequences/Populus_tremuloides_var_CAM1604-4_HAP1.mainGenome.fasta.fai")
+# 
+# bed <- c()
+# for (s in sizes){
+#   for (i in 1:dim(fai)[1]){
+#     int_start <- seq(from = 1, to = fai$V2[i], by = s*1000)
+#     int_end <- c( (int_start[-1] - 1),  fai$V2[i] )
+#     chr_id <- rep(fai$V1[i], length(int_start) )
+#     bed_chr <- cbind(chr_id, int_start, int_end)
+#     bed <- rbind(bed, bed_chr)
+#   }
+#   write.table(bed, paste0(dir, "populations.", Sys.Date(), ".txt"), quote = F, row.names = F)
+# }
+
+

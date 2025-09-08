@@ -21,30 +21,49 @@ rule mpileup:
         bcftools index -t {output}
         """
 
-# (9) Extract SNPs from each vcf
+# (10) Filter gvcf
+rule filter_gvcf:
+    input:
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.raw.gvcf.gz"
+    output: 
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz"
+    shell:
+        """
+        vcftools --gzvcf {input.vcf} \
+        --remove-indels \
+        --max-missing 0.1 \
+        --minDP 1 \
+        --maxDP 30 \
+        --minQ 30 \
+        --max-alleles 2 \
+        --recode --stdout | gzip -c > {output}
+        """
+
+###################
+
+# (9) Keep only invariant sites and SNPs from each vcf
 rule get_snps:
     input:
         ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.raw.gvcf.gz"
     output:
-         "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.snps.vcf.gz"
+         "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.snps.gvcf.gz"
     conda: "/global/home/users/arphillips/.conda/envs/gatk"
     shell:
         """
         gatk SelectVariants \
         -R {input.ref} \
         -V {input.vcf} \
-        -select-type SNP \
+        --select-type-to-exclude INDEL,MIXED,MNP,SYMBOLIC \
         -O {output}
         """
-
 
 # (10) Filtering diagnostics - extract variant quality scores
 # Roughly following suggestions in https://evodify.com/gatk-in-non-model-organism/
 # Extract alternate base quality (QUAL), mapping quality (MQ), depth at the site (DP), and allele depth for each genotype (AD)
 rule diagnostics:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.vcf.gz",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.snps.gvcf.gz",
         ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table"
@@ -71,9 +90,9 @@ rule diagnostics:
 rule filter_snps:
     input:
         ref = config["data"]["reference"]["genome"],
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.snps.vcf.gz"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.snps.gvcf.gz"
     output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.snps.vcf.gz"
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.snps.gvcf.gz"
     conda: "gatk"
     shell:
         """
@@ -88,9 +107,9 @@ rule filter_snps:
 rule filter_nocall:
     input:
         ref = config["data"]["reference"]["genome"],
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.snps.vcf.gz"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.snps.gvcf.gz"
     output:
-        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.vcf.gz"
+        "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.gvcf.gz"
     conda: "gatk"
     shell:
         """
@@ -100,7 +119,7 @@ rule filter_nocall:
 # (14) Extract genotype depth across samples to determine DP cutoff
 rule depth:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.vcf.gz",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.gvcf.gz",
         ref = config["data"]["reference"]["genome"]
     output:
         "/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.{dataset}.filtered.nocall.table"
@@ -124,10 +143,10 @@ rule depth:
 # 6 < DP < 30 with 10% missing is too strict - only 15 SNPs
 rule filter_depth:
     input:
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.vcf.gz",
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.nocall.gvcf.gz",
         ref = config["data"]["reference"]["genome"]
     output:
-        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.depth.{min_dp}dp{max_dp}.vcf.gz"
+        dp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.depth.{min_dp}dp{max_dp}.gvcf.gz"
     params:
         min = "{min_dp}",
         max = "{max_dp}"

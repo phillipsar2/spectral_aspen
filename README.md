@@ -54,7 +54,7 @@ Data source: [https://doi.org/10.26078/JNPN-4A13](https://doi.org/10.26078/JNPN-
 	RMBL raw SNPs: 3,942,970
         Spectral raw SNPs: 1,504,711
 * Variants are seperately filtered for RMBL spatial dataset & spectral dataset. Variants were hard filtered to keep QUAL > 30, MQ > 30, and biallelic sites
-        RMBL SNPs after hard filters: 1,413,730
+        RMBL SNPs after hard filters: 1,413,730 (5,743,199 records and 467,026 SNPs with vcftools rule)
         Spectral raw SNPs: 739,735
 * Multiple depth and genotype missingness filters were tested.
  	RMBL 3 < DP < 30 & 10%: 26,475 
