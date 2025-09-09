@@ -41,12 +41,18 @@ DATE = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 MAX_DP = ["30"]
 MIN_DP = ["1"]
 
-## Missing data per SNP (10%, 20%, and 25%) 
+# Missing data per SNP (10%, 20%, and 25%) 
 MISS = ["0.25", "0.2", "0.1"] 
 
-## Which dataset I'm working with ["SWUS", or "RMBL"]
+# Which dataset I'm working with ["SWUS", or "RMBL"]
 DATASET = ["RMBL"]
 
+# MAR sampling scheme
+MAR = glob_wildcards("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/{mar}.populations.2025-09-08.txt").mar
+print(MAR)
+
+# Window size for pixy
+WINSIZE = ["10000", "50000"]
 
 # =================================================================================================
 #     Target Rules
@@ -59,7 +65,7 @@ rule all:
 #        bamqc = expand("/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/{sample}_stats/genome_results.txt", sample = SAMPLE),
 #        bamqc_stats = "/global/scratch/users/arphillips/spectral_aspen/reports/bamqc/stats.bamqc.txt"
 #        vcf = expand("/global/scratch/users/arphillips/spectral_aspen/data/vcf/rad_aspen.{chr}.{dataset}.raw.gvcf.gz", chr = CHROM, dataset = DATASET),
-        vcftools_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz", chr = CHROM, dataset = DATASET)
+#        vcftools_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz", chr = CHROM, dataset = DATASET)
 #        table = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM),
 #        dp = expand("/global/scratch/users/arphillips/spectral_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM),
 #        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS),
@@ -79,13 +85,16 @@ rule all:
 #        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
 #        dp = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
 #         dp_filt = expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
+        ## Genetic diversity
+        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
 
 # =================================================================================================
 #     Rule Modules
 # =================================================================================================
 #include: "rules/mapping.smk"
-include: "rules/calling.smk"
+#include: "rules/calling.smk"
 #include: "rules/calling_obv.smk"
 #include: "rules/genotyping.smk"
 #include: "rules/nquack.smk"
 #include: "rules/angsd.smk"
+include: "rules/gendiv.smk"

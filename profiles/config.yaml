@@ -142,13 +142,13 @@ set-resources:
     runtime: 120
 
   # ----------------------------------------------------------------------
-  #     mapdamage
+  #     pixy
   # ----------------------------------------------------------------------
 
-  mapdamage:
-    # Additional parameters for mapdamage, see http://ginolhac.github.io/mapDamage/
-    # Used only if settings:mapdamage == true
-    extra: ""
+  pixy:
+    cpus_per_task: 2
+    runtime: 300
+    mem_mb: 19200
 
   # ----------------------------------------------------------------------
   #     ANGSD ibs

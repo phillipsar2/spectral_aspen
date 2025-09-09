@@ -375,19 +375,25 @@ write.table(mar_ouput_df, paste0(dir, "southnorth", ".mar_output_df.tsv"), sep =
 # Create population file for pixy ----
 output_files <- list.files(path = dir, pattern = "*.mar_output_df.tsv")
 
-output_df <- read.table(paste0(dir, output_files[1]), header = T)
-output_list <- lapply(output_df$trees_in_grid, function(x){str_split(x,pattern = ",", simplify = T)})
+for (i in 1:length(output_files)){
+  output_df <- read.table(paste0(dir, output_files[i]), header = T)
+  output_list <- lapply(output_df$trees_in_grid, function(x){str_split(x,pattern = ",", simplify = T)})
+  names(output_list) <- 1:length(output_list)
+  
+  pop_df <- data.frame(sample = unlist(output_list),
+                       pop = paste0("pop",rep( names(output_list), lapply(output_list, length)))
+  ) %>%
+    arrange(pop) %>%
+    filter(sample != "")
+  # head(pop_df)
+  # unique(pop_df[,1])
+  colnames(pop_df) <- NULL # remove header
+  
+  sampling <- stringr::str_split(output_files[i], pattern = ".m", simplify = T)[1,1]
+  write.table(pop_df, paste0(dir, sampling, ".populations.", Sys.Date(), ".txt"), quote = F, row.names = F, sep = "\t")
+}
 
-names(output_list) <- 1:length(output_list)
 
-pop_df <- data.frame(sample = unlist(output_list),
-                     pop = rep( names(output_list), lapply(output_list, length))
-                     ) %>%
-  arrange(pop)
-pop_df
-colnames(pop_df) <- NULL # remove header
-
-write.table(pop_df, paste0(dir, "populations.", Sys.Date(), ".txt"), quote = F, row.names = F)
 
 
 #################################
