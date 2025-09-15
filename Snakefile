@@ -71,22 +71,21 @@ rule all:
 #        dp_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.nocall.{min_dp}dp{max_dp}.per{miss}.vcf.gz", chr = CHROM, min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS),
 #        comb_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.{min_dp}dp{max_dp}.per{miss}.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS)
 #        comb_raw =  "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz"
-        ## nQuack
-#        prep = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/prepared/{sample}.rg.txt", sample = PLOID_SAMP),
-#        infer = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/model_inference/{sample}.rg.csv", sample = PLOID_SAMP)
-#        boot = expand("/global/scratch/users/arphillips/spectral_aspen/data/nquack/bootstrap/{sample}.rg-boots.csv", sample = PLOID_SAMP)
         ## Genotyping
+#        extract_invar = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.invar.vcf.gz", chr = CHROM, dataset = DATASET)
 #        gbs2ploidy = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv", spec_samp = SAMPLE)
 #        gbs2ploidy = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv", spec_samp = SPEC_SAMP)
-#        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{date}.txt", date = DATE),
-#        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{date}.txt", date = DATE),
+#        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET), 
+#        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET),
+#        comb_updog = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.vcf.gz", chr = CHROM)
+        merge_gvcf = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf", chr = CHROM, dataset = DATASET)
         ## Subset for Obv study
 #        merge_raw = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz",
 #        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
 #        dp = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
 #         dp_filt = expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
         ## Genetic diversity
-        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
+#        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
 
 # =================================================================================================
 #     Rule Modules
@@ -94,7 +93,6 @@ rule all:
 #include: "rules/mapping.smk"
 #include: "rules/calling.smk"
 #include: "rules/calling_obv.smk"
-#include: "rules/genotyping.smk"
-#include: "rules/nquack.smk"
+include: "rules/genotyping.smk"
 #include: "rules/angsd.smk"
-include: "rules/gendiv.smk"
+#include: "rules/gendiv.smk"
