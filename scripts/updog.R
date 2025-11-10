@@ -1,4 +1,4 @@
-# Title: Updog genotyping
+# Title: Updog genotyping - Radseq
 # Author: Alyssa Phillips
 # Date: 1/15/2025
 

@@ -100,7 +100,7 @@ rule comb_snp_inv:
     params:
         tmp = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.invar.ploidy.vcf.gz"
     output:
-        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf"
+        "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf.gz"
     shell:
         """
         bcftools index -f {input.invar}

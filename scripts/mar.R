@@ -266,7 +266,7 @@ str(meta)
 ## subset metadata to those in genotype file
 meta_sub <- meta %>%
   filter(Site_Code %in% site_names) %>%
-  select(Site_Code, Longitude, Latitude) # pick appropriate columns
+  dplyr::select(Site_Code, Longitude, Latitude) # pick appropriate columns
 
 ## order metadata to match genotype file
 meta_sub$Site_Code == site_names
@@ -279,6 +279,9 @@ meta_sub$genotype <- geno_names$V1
 ## subset to necessary columns
 meta_sub_order <- dplyr::select(meta_sub, genotype, Longitude, Latitude)
 colnames(gt_cont) == meta_sub_order$genotype
+write.csv(meta_sub_order, 
+          file = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.latlon.withnames.csv",
+          row.names = F, quote = F)
 
 colnames(meta_sub_order) <- c("ID", "LON", "LAT")
 dim(meta_sub_order)
@@ -318,62 +321,67 @@ library(dplyr)
 dir = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/")
 list.files(dir)
 
-load(paste0(dir, "gm_RMBL_aspen.rda" ))
+load(paste0(dir, "gm_RMBL_aspen.rda" )) # genotype information
 head(gm)
 
 # load(paste0(dir, "extlist_RMBL_aspen.rda" ))
 # head(extlist)
 
 
-# Get sampling grids ----
+# Get sampling grids for Erin out of gm ----
 ## Load sampling pattern
 load(paste0(dir, "mardflist_RMBL_aspen.rda"))
 str(mardflist)
 
-## For each sampling type, convert to lat long
+## make coordinate files with samples ----
 samplingtype <- c("random","inwards","outwards","southnorth","northsouth")
 
-# head(mardflist$inwards$extent) # boundaries; put each value into rowcol_extent to get lat long box
-length(mardflist$southnorth$extent)
+rowcol_sample <- function(mm, bbox, revbbox = FALSE) {
+  cellsnotna <- mar:::.rowcol_cellid(mm, bbox, revbbox)
+  samples <- mar:::.cellid_sample(mm, cellsnotna)
+  return(samples)
+}
 
-# coor <- str_split(mardflist$random$extent[1], pattern = ";", simplify = T) %>% as.numeric()
-# mar:::.rowcol_extent(gm$maps, bbox = coor)
-# mar:::.rowcol_extent(gm$maps, bbox = c(16,16,20,20))
-# df <- mar:::.rowcol_extent(gm$maps, bbox = unlist(coor))
+geno_names <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.latlon.withnames.csv")
+head(geno_names)
 
-coor_list <- lapply(mardflist$southnorth$extent, function(x){ str_split(x, pattern = ";", simplify = T) })
-coor_num <- lapply(coor_list, as.numeric)
-coor_df <- lapply(coor_num, function(x){ mar:::.rowcol_extent(gm$maps, bbox = unlist(x)) })
-coor_mat <- lapply(coor_df, function(x) { c(x@xmin, x@xmax, x@ymin, x@ymax) })
+for (s in samplingtype){
+  ## Extract sampling grids
+  coor_list <- lapply(mardflist[[s]][,8], function(x){ 
+    str_split(x, pattern = ";", simplify = T) # split by ';' into vectors in a list
+  })
+  coor_num <- lapply(coor_list, as.numeric)
+  coor_df <- lapply(coor_num, function(x){ 
+    mar:::.rowcol_extent(gm$maps, bbox = unlist(x)) # convert to lat long
+  })
+  coor_mat <- lapply(coor_df, function(x) { 
+    c(x@xmin, x@xmax, x@ymin, x@ymax) }) # format into list
+  
+  coor_mat <- matrix(unlist(coor_mat), ncol = 4, byrow = TRUE) # convert to matrix
+  colnames(coor_mat) <- c("xmin", "xmax", "ymin", "ymax")
+  # head(coor_mat)
+  
+  # Get individuals within each grid 
+  ## mm = gm$maps
+  ## bbox = grid coordinates
+  samples <- lapply(coor_num, function(x){rowcol_sample(gm$maps, bbox = unlist(x))})
+  
+  ## Pair geno IDs to sample names
+  sample_names <- lapply(samples, function(x){ paste( geno_names$ID[unlist(x)], collapse = ',') })
+  # str_split(names_stacked, pattern = ",") # how to undo
+  
+  mar_ouput_df <- data.frame(coor_mat,
+                             trees_in_grid = unlist(sample_names))
+  # head(mar_ouput_df)
+  
+  ## Write coordinates to file
+  write.table(mar_ouput_df, paste0(dir, s,".", Sys.Date(),".mar_output_df.tsv"), sep = "\t", row.names = F)
+}
 
-coor_mat <- matrix(unlist(coor_mat), ncol = 4, byrow = TRUE)
-colnames(coor_mat) <- c("xmin", "xmax", "ymin", "ymax") 
-head(coor_mat)
-
-# Get individuals within each grid ----
-
-# head(mardflist$random$extent) # boundaries; put each value into rowcol_extent to get lat long box
-# mar:::.rowcol_cellid(gm$maps, bbox = c(16,16,20,20)) # get cell IDs
-# which(gm$maps$cellid == 755) # convert to sample IDs
-# geno_names[ unlist(names_df[370]) ,]
-# names_stacked <- paste( geno_names[ unlist(names_df[370]) ,] , collapse=',')
-
-names_id <- lapply(coor_num, function(x){ mar:::.rowcol_cellid(gm$maps, bbox = unlist(x)) })
-# which(gm$maps$cellid %in% names_id[[370]])
-names_df <- lapply(names_id, function(x){ which(gm$maps$cellid == x)}) # convert to genotype ID
-
-geno_names <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/mar.genomat.colnames.tsv")
-names_stacked <- lapply(names_df, function(x){ paste( geno_names[ unlist(x) ,] , collapse=',')  })
-# str_split(names_stacked, pattern = ",") # how to undo
-
-mar_ouput_df <- data.frame(coor_mat,
-                           trees_in_grid = unlist(names_stacked))
-head(mar_ouput_df)
-
-write.table(mar_ouput_df, paste0(dir, "southnorth", ".mar_output_df.tsv"), sep = "\t", row.names = F)
 
 # Create population file for pixy ----
 output_files <- list.files(path = dir, pattern = "*.mar_output_df.tsv")
+output_files
 
 for (i in 1:length(output_files)){
   output_df <- read.table(paste0(dir, output_files[i]), header = T)
@@ -389,8 +397,8 @@ for (i in 1:length(output_files)){
   # unique(pop_df[,1])
   colnames(pop_df) <- NULL # remove header
   
-  sampling <- stringr::str_split(output_files[i], pattern = ".m", simplify = T)[1,1]
-  write.table(pop_df, paste0(dir, sampling, ".populations.", Sys.Date(), ".txt"), quote = F, row.names = F, sep = "\t")
+  sampling <- stringr::str_split(output_files[i], pattern = ".mar", simplify = T)[1,1]
+  write.table(pop_df, paste0(dir, sampling, ".populations", ".txt"), quote = F, row.names = F, sep = "\t")
 }
 
 

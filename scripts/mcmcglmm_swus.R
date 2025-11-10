@@ -32,8 +32,9 @@ library(parallel)
 
 # (0) Load data ----
 ## Phenotype data
-sv_data <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/phenotypes/final_leaf-level_spectra_2022-2023_03-14-24_sg_greenhouse-joined.csv")
-sv_data[, c(1:5,7:9,12,16)] <- lapply(sv_data[, c(1:5,7:9,12,16)], as.factor)
+sv_data <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/phenotypes/processed_leaf-level_spectra_2022-2023_outlier1_202509017.csv")
+dataset = "corrected" # corrected or corrected_CR
+sv_data[, c(1:5,7:9,14,18)] <- lapply(sv_data[, c(1:5,7:9,12,16)], as.factor)
 str(sv_data)
 dim(sv_data)
 
@@ -43,7 +44,7 @@ K <- read.table("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/dat
 K[1:5,1:5]
 dim(K)
 
-pheatmap::pheatmap(K)
+# pheatmap::pheatmap(K)
 
 ### Change names to genotype IDs
 key <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/metadata/spectra_genotypes.csv")
@@ -81,12 +82,12 @@ K <- as(K, "sparseMatrix") # must be a sparse matrix!!
 k <- solve(K) # invert matrix
 
 ## Subset phenotype data to those in kinship matrix
-unique(sv_data$ID_genotype_JGI) %>% length()
+unique(sv_data$genotype) %>% length()
 dim(sv_data)
 
-sv_sub <- sv_data[sv_data$ID_genotype_JGI %in% colnames(K),]
+sv_sub <- sv_data[sv_data$genotype %in% colnames(K),]
 dim(sv_sub)
-unique(sv_sub$ID_genotype_JGI) %>% length()
+unique(sv_sub$genotype) %>% length()
 
 ## Amend df with new ploidy calls
 gbs2ploidy_df <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/spectral_aspen.ploidycalls.2025-04-15.csv")
@@ -94,7 +95,8 @@ geno_ID_df$genos %in% gbs2ploidy_df$sample
 
 pl_temp <- merge(x = gbs2ploidy_df, y = geno_ID_df, by.x = "sample", by.y =  "genos")
 
-sv_sub_pl <- merge(x = pl_temp, y = sv_sub, by = "ID_genotype_JGI" )
+sv_sub_pl <- merge(x = pl_temp, y = sv_sub, by.x = "ID_genotype_JGI", by.y = "genotype" )
+dim(sv_sub_pl)
 
 ## Make sure categorical variables are factors
 sv_sub_pl$ploidy_call <- as.factor(sv_sub_pl$ploidy_call)
@@ -117,17 +119,20 @@ library(purrr)
 
 states <- us_states()
 
-events_sf <- unique(sv_sub_pl[,12:13]) %>% 
+events_sf <- dplyr::select(sv_sub_pl, ID_genotype_JGI, Latitude, Longitude, ploidy_call) %>%
+  unique() %>%
   st_as_sf(coords = c("Longitude", "Latitude"), crs = 4326) 
 dim(events_sf)
 
-events_sf$ploidy <- unique(sv_sub_pl[,c(3,12:13)])$ploidy_call
+# events_sf$ploidy <- dplyr::select(sv_sub_pl, ID_genotype_JGI, Latitude, Longitude, ploidy_call) %>%
+#   unique() %>%
+#   dplyr::select(ploidy_call)
 
 ggplot() + 
-  geom_sf(data = states, size = 4, color = "black", fill = NA) +
+  geom_sf(data = states, color = "black", fill = NA) +
   # ggtitle("Lake Erie Outline") + 
   # coord_sf() +
-  geom_sf(data = events_sf, size = 2, aes(color = ploidy), alpha = 0.5) +
+  geom_sf(data = events_sf, size = 2, aes(color = ploidy_call), alpha = 0.5) +
   theme_bw() +
   theme(panel.grid = element_blank(), 
         # axis.text = element_blank(),
@@ -141,12 +146,12 @@ ggplot() +
 
 # Assess normality of the data
 ## One wavelength
-trait_means <- aggregate( w701 ~ ID_genotype_JGI + ploidy_call , sv_sub_pl, FUN = mean)
-ggplot(trait_means, aes(x = w701)) +
-  geom_histogram() +
-  theme_bw()
+# trait_means <- aggregate( w701 ~ ID_genotype_JGI + ploidy_call , sv_sub_pl, FUN = mean)
+# ggplot(trait_means, aes(x = w701)) +
+#   geom_histogram() +
+#   theme_bw()
 
-ggplot(sv_sub_pl, aes(y = w701, x = year.x)) +
+ggplot(sv_sub_pl, aes(y = w701.0, x = year)) +
   geom_boxplot() +
   theme_bw() +
   theme(
@@ -159,7 +164,7 @@ ggplot(sv_sub_pl, aes(y = w701, x = year.x)) +
 ## All the wavelengths
 sv_long <- sv_sub_pl%>%
   tidyr::pivot_longer(
-  cols = `w346.7`:`w2502.6`, 
+  cols = `w399.4`:`w2397.2`, 
   names_to = "wavelength",
   values_to = "value"
 )
@@ -205,7 +210,7 @@ sv_long %>%
 # Reflectance vs year
 sv_long %>%
   filter(wavelength %in% sample(levels(sv_long$wavelength), 9)) %>% # plot 9 random wavelength
-  ggplot(aes(y = value, x = year.x)) +
+  ggplot(aes(y = value, x = year)) +
   geom_boxplot() +
   theme_bw() +
   facet_wrap(~wavelength, scale="free_y") +
@@ -218,7 +223,7 @@ sv_long %>%
 
 sv_long %>%
   filter(wavelength %in% sample(levels(sv_long$wavelength), 9)) %>% # plot 9 random wavelength
-  ggplot(aes(y = value, x = year.x)) +
+  ggplot(aes(y = value, x = year)) +
   geom_boxplot() +
   theme_bw() +
   facet_wrap(~wavelength, scale="free_y") +
@@ -275,12 +280,12 @@ sv_long %>%
 # > Prepare dataframe ----
 # table(sv_sub_pl$ID_genotype_JGI, sv_sub_pl$year.x)
 
-wv = "w701"
+# wv = "w701"
 sv_sub_comp <- sv_sub_pl %>% 
-  filter(year.x == '2023') %>% # year are non-overlapping
-  select(all_of(wv), ploidy_call, age_scaled, ID_genotype_JGI, id, state, year.x, leaf_num) %>%
+  filter(year == '2023') %>% # year are non-overlapping
+  dplyr::select(all_of(wv), ploidy_call, age_scaled, ID_genotype_JGI, id, state, year, leaf_num) %>%
   filter(complete.cases(.)) %>%
-  rename(year = year.x) %>%
+  rename(year = year) %>%
   # group_by(ID_genotype_JGI, id) %>% 
   # slice_sample(n = 3) %>% # How to subsample the genotypes????
   as.data.frame()
@@ -441,21 +446,21 @@ HPDinterval(herit, prob = 0.95)
 ### Parallelize it ----
 year = "2022"
 n_wavelengths <- colnames(sv_sub_pl) %>% str_count("w") %>% sum() - 1 
-# wv = "w351.1"
+# wv = "w399.4"
 
 set.seed(1)
-mod <- mclapply(801:n_wavelengths, function(i) {
-  wv <- colnames(sv_sub_pl)[-c(1:19)][i]
+mod <- mclapply(601:700, function(i) {
+  wv <- colnames(sv_sub_pl)[-c(1:23)][i]
   print(wv)
   
-  dir <- paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/", year, "/", wv)
-  dir.create(dir, showWarnings = T)
+  dir <- paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year, "/", wv)
+  dir.create(dir, showWarnings = T,recursive = T)
   
   sv_sub_comp <- sv_sub_pl %>% 
-    filter(year.x == year) %>% # year are non-overlapping
-    select(all_of(wv), ploidy_call, age_scaled, ID_genotype_JGI, id, year.x, leaf_num) %>%
+    filter(year == year) %>% # year are non-overlapping
+    dplyr::select(all_of(wv), ploidy_call, age_scaled, ID_genotype_JGI, id, year, leaf_num) %>%
     filter(complete.cases(.)) %>%
-    rename(year = year.x) %>%
+    rename(year = year) %>%
     # group_by(ID_genotype_JGI, id) %>% # Subsample replicates to 3 per genotype
     # slice_sample(n = 3) %>% 
     as.data.frame()
@@ -495,9 +500,12 @@ mod <- mclapply(801:n_wavelengths, function(i) {
   
   h2_df <- c( median(h2), mean(h2), HPDinterval(h2, prob = 0.95) ) %>% as.data.frame() %>% t()
   write.table(h2_df, paste0(dir, "/h2_estimates.", wv, ".csv"), row.names = F, col.names = F, sep = ",")
-  
+  paste0(wv, " done")  
 }, 
 mc.cores = 10)
+
+
+
 
 # Plot the heritability results ----
 

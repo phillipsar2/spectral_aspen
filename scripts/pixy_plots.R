@@ -4,78 +4,171 @@
 
 library(ggplot2)
 library(tidyverse)
+library(raster)
+library(sars)
 
-dir <- "/global/scratch/users/arphillips/spectral_aspen/data/pixy/"
+# Load pixy data ----
+dir <- "/global/scratch/users/arphillips/spectral_aspen/data/pixy/09292025/"
+window = 25000 # 25000 & 50000
+sampling = "random" # southnorth, random, outwards, northsouth, inwards
 
-# Provide path to input. Can be pi or Dxy.
-# NOTE: this is the only line you should have to edit to run this code:
-inp <- read.table(paste0(dir, "inwards.Chr01.w10000_pi.txt"), sep = "\t", header = T)
-window = 10000
+# Calculate pi ----
+## Load pi data ----
+pi_files <- list.files(path = dir, pattern = paste0(sampling, ".*w", window, "_pi.txt"))
+pi_list <- lapply(paste0(dir, pi_files), function(x){ read.table(x, sep = "\t", header = T) })
+pi_df <- bind_rows(pi_list)
+pi_df$pop_num <- gsub(x = pi_df$pop, pattern = "pop", replacement = "")
+dim(pi_df)
+str(pi_df)
 
-# Find the chromosome names and order them: first numerical order, then any non-numerical chromosomes
-#   e.g., chr1, chr2, chr22, chrX
-chroms <- unique(inp$chromosome)
+pi_df <- arrange(pi_df, as.numeric(pop_num))
+
+## Sort by chromosome number
+chroms <- unique(pi_df$chromosome)
 chrOrder <- sort(chroms)
-inp$chrOrder <- factor(inp$chromosome,levels=chrOrder)
+pi_df$chrOrder <- factor(pi_df$chromosome, levels = chrOrder)
 
-# Plot pi for each population found in the input file
-# Saves a copy of each plot in the working directory
+## Calculate average pi ----
+hist(pi_df$no_sites/window * 100,
+     main = "percent of sites in each window")
 
-
-# Load converting wide to long ----
-pixy_to_long <- function(pixy_files){ # input file path
-  pixy_df <- list()
-  for(i in 1:length(pixy_files)){
-    stat_file_type <- gsub(".*_|.txt", "", pixy_files[i])
-      df <- read_delim(pixy_files[i], delim = "\t")
-      df <- df %>%
-        gather(-pop, -window_pos_1, -window_pos_2, -chromosome,
-               key = "statistic", value = "value") %>%
-        rename(pop1 = pop)
-      pixy_df[[i]] <- df
-  }
-  bind_rows(pixy_df) %>%
-    arrange(pop1, pop2, chromosome, window_pos_1, statistic)
-}
-
-pixy_files <- paste0(dir, "inwards.Chr01.w10000_pi.txt")
-pixy_df <- pixy_to_long(pixy_files)
-head(pixy_df)
-
-# Plot along chromosome ----
-pixy_df %>%
-  filter(chromosome == "Chr01") %>%
-  filter(statistic %in% c("avg_pi")) %>%
-  mutate(chr_position = ((window_pos_1 + window_pos_2)/2)/1000000) %>%
-  ggplot(aes(x = chr_position, y = value, color = statistic))+
-  geom_line(size = 0.25)+
-  # facet_grid(statistic ~ .,
-  #            scales = "free_y", switch = "x", space = "free_x",
-  #            labeller = labeller(statistic = pixy_labeller,
-  #                                value = label_value))+
-  xlab("Position on Chromosome (Mb)")+
-  ylab("Statistic Value")+
-  theme_bw()+
-  theme(panel.spacing = unit(0.1, "cm"),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        legend.position = "none")+
-  scale_x_continuous(expand = c(0, 0))+
-  scale_y_continuous(expand = c(0, 0))+
-  scale_color_brewer(palette = "Set1")
-
-# Calculate average thetas ----
 # (window 1 count_diffs + window 2 count_diffs) / (window 1 comparisons + window 2 comparisons)
 # sum(inp$count_diffs) / sum(inp$count_comparisons)
+avg_theta <- data.frame("pop" = unique(pi_df$pop_num), # create empty df
+                     "avg_pi" = NA,
+                     "avg_watterson" = NA,
+                     "M" = NA)
 
-p = unique(inp$pop)[1]
-for (p in unique(inp$pop)){
-  sub <- inp[inp$pop == p,]
-  # sub <- filter(sub, no_sites / window >= 0.1) # remove windows with < 10% of sites
-  sub <- filter(sub, no_sites != 0)
-  avg_pi <- sum(sub$count_diffs) / sum(sub$count_comparisons)
+for (p in unique(pi_df$pop_num)){
+  sub <- pi_df[pi_df$pop_num == p,]
+  sub <- filter(sub, no_sites != 0) # drop windows with zero sequenced sites
+  avg_theta$avg_pi[avg_theta$pop == p] <- sum(sub$count_diffs) / sum(sub$count_comparisons)
 }
+head(avg_theta)
 
-# avg_pi <- tapply(inp, inp$pop, function(x){sum(inp$count_diffs) / sum(inp$count_comparisons)})
-# length(avg_pi)
+hist(avg_theta$avg_pi)
+mean(avg_theta$avg_pi)
 
+# Calculate Watterson's theta ----
+## Load theta w data ----
+w_files <- list.files(path = dir, pattern = paste0(sampling, ".*w", window, "_watterson_theta.txt"))
+w_list <- lapply(paste0(dir, w_files), function(x){ read.table(x, sep = "\t", header = T) })
+w_df <- bind_rows(w_list)
+w_df$pop_num <- gsub(x = w_df$pop, pattern = "pop", replacement = "")
+dim(w_df)
+str(w_df)
+
+str(w_df)
+
+w_df <- arrange(w_df, as.numeric(pop_num))
+
+## Calc avg theta 2 ----
+# averaging the theta column 
+for (w in unique(w_df$pop_num)){
+  sub <- w_df[w_df$pop_num == w,]
+  sub <- filter(sub, no_sites != 0) # drop windows with zero sequenced sites
+  avg_theta$avg_watterson[avg_theta$pop == w] <- mean(sub$avg_watterson_theta)
+}
+head(avg_theta$avg_watterson)
+
+hist(avg_theta$avg_watterson)
+
+mean(avg_theta$avg_watterson)
+
+# Count mutations (S) ----
+## Calc total number of segregating sites ----
+## no_var_sites = number of variable sites
+for (m in unique(w_df$pop_num)){
+  sub <- w_df[w_df$pop_num == m,]
+  sub <- filter(sub, no_sites != 0) # drop windows with zero sequenced sites
+  avg_theta$M[avg_theta$pop == m] <- sum(sub$no_var_sites)
+}
+head(avg_theta$M)
+
+hist(avg_theta$M)
+mean(avg_theta$M)
+
+# Load Area data ----
+mardir <- "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/"
+
+## Load mar object
+load(paste0(mardir, "mardflist_RMBL_aspen.rda"))
+
+## Extract area
+area <- mardflist[[sampling]][,c("A","Asq")]
+
+## Extract sample size
+n <- mardflist[[sampling]][,"N"]
+
+pdf(paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/figures/", sampling, ".nvsA.pdf"))
+plot(area$A, n) # n increases with A
+dev.off()
+
+# Plot ----
+area_df <- data.frame(area, avg_theta, n)
+area_df$n <- as.numeric(area_df$n)
+area_df$pop <- as.factor(area_df$pop)
+str(area_df)
+
+# area_df <- filter(area_df, n > 5) # filter to more than 5 genos
+
+ggplot(area_df, aes(x = Asq, y = M)) +
+  # geom_point(aes(size = n), alpha = 0.5) +
+  geom_point() +
+  theme_bw() +
+  geom_smooth() +
+  ylab("M") +
+  xlab("Area") +
+  ggtitle(sampling)
+
+ggplot(area_df, aes(x = log(Asq), y = log(M))) +
+  geom_point(alpha = 0.5) +
+  theme_bw() +
+  geom_smooth() +
+  ylab("log M") +
+  xlab("log Area") +
+  ggtitle(sampling)
+
+ggplot(area_df, aes(x = Asq, y = avg_watterson)) +
+  # geom_point(aes( size = n), alpha = 0.5) +
+  geom_point() +
+  theme_bw() +
+  geom_smooth() +
+  ylab("Watterson's theta") +
+  xlab("Area") +
+  ggtitle(sampling)
+
+ggplot(area_df, aes(x = Asq, y = avg_pi)) +
+  # geom_point(aes( size = n), alpha = 0.5) +
+  geom_point() +
+  theme_bw() +
+  geom_smooth() +
+  ylab("Pi") +
+  xlab("Area") +
+  ggtitle(sampling)
+
+# Write data frame ----
+colnames(area_df) <- c( "A", "Asq", "pop","thetapi", "thetaw","M","n")
+write.csv(area_df, 
+          paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/", sampling, ".", window, ".div.estimates.csv"))
+
+# Estimate MAR ----
+# Fit power law equation
+# area <- 1:10
+# mutations <- c(50, 75, 100, 125, 150, 175, 200, 225, 250, 275)
+# data <- data.frame(A = area, M = mutations)
+# mar <- MARcalc(data, Mtype = "M", Atype = "A")
+
+mar <- mar::MARcalc(area_df, "M", "A")
+war <- mar::MARcalc(area_df, "thetaw", "A")
+par <- mar::MARcalc(area_df, "thetapi", "A")
+
+write.csv(summary(mar)$Parameters, paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/", sampling, ".", window, ".model.summary.csv"))
+
+pdf(paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/figures/", sampling , ".", window, ".mar.pdf"),
+    width = 8, height =3)
+par(mfrow = c(1,3))
+plot(mar, xlab = "Area", ylab = "M")
+plot(war, xlab = "Area", ylab = "Watterson's theta")
+plot(par, xlab = "Area", ylab = "Nucleotide diversity")
+dev.off()

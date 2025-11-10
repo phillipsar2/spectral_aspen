@@ -48,11 +48,11 @@ MISS = ["0.25", "0.2", "0.1"]
 DATASET = ["RMBL"]
 
 # MAR sampling scheme
-MAR = glob_wildcards("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/{mar}.populations.2025-09-08.txt").mar
+MAR = glob_wildcards("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/{mar}.2025-09-29.populations.txt").mar
 print(MAR)
 
 # Window size for pixy
-WINSIZE = ["10000", "50000"]
+WINSIZE = ["25000", "50000"]
 
 # =================================================================================================
 #     Target Rules
@@ -78,14 +78,14 @@ rule all:
 #        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET), 
 #        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET),
 #        comb_updog = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.vcf.gz", chr = CHROM)
-        merge_gvcf = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf", chr = CHROM, dataset = DATASET)
+#        merge_gvcf = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf", chr = CHROM, dataset = DATASET)
         ## Subset for Obv study
 #        merge_raw = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz",
 #        table = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/rad_aspen.{chr}.table", chr = CHROM)
 #        dp = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
 #         dp_filt = expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
         ## Genetic diversity
-#        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
+        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/09292025/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
 
 # =================================================================================================
 #     Rule Modules
@@ -93,6 +93,6 @@ rule all:
 #include: "rules/mapping.smk"
 #include: "rules/calling.smk"
 #include: "rules/calling_obv.smk"
-include: "rules/genotyping.smk"
+#include: "rules/genotyping.smk"
 #include: "rules/angsd.smk"
-#include: "rules/gendiv.smk"
+include: "rules/gendiv.smk"
