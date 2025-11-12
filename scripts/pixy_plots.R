@@ -10,7 +10,7 @@ library(sars)
 # Load pixy data ----
 dir <- "/global/scratch/users/arphillips/spectral_aspen/data/pixy/09292025/"
 window = 25000 # 25000 & 50000
-sampling = "random" # southnorth, random, outwards, northsouth, inwards
+sampling = "inwards" # southnorth, random, outwards, northsouth, inwards
 
 # Calculate pi ----
 ## Load pi data ----

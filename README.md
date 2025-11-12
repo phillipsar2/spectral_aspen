@@ -75,4 +75,4 @@ Data source: [https://doi.org/10.26078/JNPN-4A13](https://doi.org/10.26078/JNPN-
 
 7. Modified MAR on RMBL datasets 
 * Run the MAR pipeline assuming everything is diploid genotypes. We are running this just for the sampling. The script is `scripts/mar.R`.
-* Then we use a custom script to estimate nucleotide diversity and watterson's theta for the sampled groups.
+* Then we use a custom approach to estimate nucleotide diversity and watterson's theta for the sampled groups. Our approach uses pixy, which can handle mixed-ploidy datasets. We provide it a filtered gvcf as an input.
