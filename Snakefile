@@ -45,11 +45,10 @@ MIN_DP = ["1"]
 MISS = ["0.25", "0.2", "0.1"] 
 
 # Which dataset I'm working with ["SWUS", or "RMBL"]
-DATASET = ["RMBL"]
+DATASET = ["SWUS"]
 
 # MAR sampling scheme
 MAR = glob_wildcards("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/{mar}.2025-09-29.populations.txt").mar
-print(MAR)
 
 # Window size for pixy
 WINSIZE = ["25000", "50000"]
@@ -72,12 +71,12 @@ rule all:
 #        comb_filt = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.all.{min_dp}dp{max_dp}.per{miss}.vcf.gz", min_dp = MIN_DP, max_dp = MAX_DP, miss = MISS)
 #        comb_raw =  "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz"
         ## Genotyping
-#        extract_invar = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.invar.vcf.gz", chr = CHROM, dataset = DATASET)
+        extract_invar = expand("/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.invar.vcf.gz", chr = CHROM, dataset = DATASET),
 #        gbs2ploidy = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv", spec_samp = SAMPLE)
 #        gbs2ploidy = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/gbs2ploidy/{spec_samp}.propOut.csv", spec_samp = SPEC_SAMP)
-#        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET), 
-#        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET),
-#        comb_updog = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.vcf.gz", chr = CHROM)
+        updog_dip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.diploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET), 
+        updog_trip = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/updog.genomat.triploid.{chr}.{dataset}.txt", chr = CHROM, dataset = DATASET),
+        comb_updog = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.vcf.gz", chr = CHROM),
 #        merge_gvcf = expand("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.{dataset}.gvcf", chr = CHROM, dataset = DATASET)
         ## Subset for Obv study
 #        merge_raw = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/raw/rad_aspen.all.raw.vcf.gz",
@@ -85,14 +84,15 @@ rule all:
 #        dp = expand("/global/scratch/users/arphillips/obv_aspen/reports/filtering/depth/rad_aspen.{chr}.filtered.nocall.table", chr = CHROM)
 #         dp_filt = expand("/global/scratch/users/arphillips/obv_aspen/data/processed/filtered_snps/rad_aspen.{chr}.depth.6dp30.nocall.vcf", chr = CHROM)
         ## Genetic diversity
-        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/09292025/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
+#        pixy = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/09292025/{mar}.{chr}.w{winsize}_pi.txt", mar = MAR, chr = CHROM, winsize = WINSIZE)
+#        pixy_rand = expand("/global/scratch/users/arphillips/spectral_aspen/data/pixy/012126/greenhouse_2023_random_samples_20260121.{chr}.w{winsize}_pi.txt", chr = CHROM, winsize = WINSIZE)
 
 # =================================================================================================
 #     Rule Modules
 # =================================================================================================
 #include: "rules/mapping.smk"
-#include: "rules/calling.smk"
+include: "rules/calling.smk"
 #include: "rules/calling_obv.smk"
-#include: "rules/genotyping.smk"
+include: "rules/genotyping.smk"
 #include: "rules/angsd.smk"
-include: "rules/gendiv.smk"
+#include: "rules/gendiv.smk"

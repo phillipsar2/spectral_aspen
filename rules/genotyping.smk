@@ -19,7 +19,7 @@ rule gbs2ploidy:
         """
 
 # Subset SNPs for updog
-rule get_snps:
+rule get_snps_fromgvcf:
     input:
         ref = config["data"]["reference"]["genome"],
         vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz"

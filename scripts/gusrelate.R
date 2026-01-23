@@ -18,12 +18,12 @@ library(pheatmap)
 # (1) Load data ----
 # Specify dataset
 ## SWUS
-dataset <- "WUSG"
-file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/spectral_aspen.all.1dp30.per0.1.vcf.gz", verbose = FALSE )
+# dataset <- "WUSG"
+# file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/spectral_aspen.all.1dp30.per0.1.vcf.gz", verbose = FALSE )
 
 ## RMBL
-# dataset <- "RMBL"
-# file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz", verbose = F)
+dataset <- "RMBL"
+file <- as.character("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/backup_data/vcf/RMBL_aspen.nocall.3dp30.vcf.gz", verbose = F)
 
 # Load data
 vcf <- read.vcfR(file, verbose = FALSE )

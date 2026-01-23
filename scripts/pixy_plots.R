@@ -148,7 +148,7 @@ ggplot(area_df, aes(x = Asq, y = avg_pi)) +
   ggtitle(sampling)
 
 # Write data frame ----
-colnames(area_df) <- c( "A", "Asq", "pop","thetapi", "thetaw","M","n")
+colnames(area_df) <- c( "Asq", "A", "pop","thetapi", "thetaw","M","n")
 write.csv(area_df, 
           paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/2025-07-02/", sampling, ".", window, ".div.estimates.csv"))
 

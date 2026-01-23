@@ -380,6 +380,8 @@ for (s in samplingtype){
 
 
 # Create population file for pixy ----
+## (1) From MAR sampling ----
+dir = paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/mar/", Sys.Date())
 output_files <- list.files(path = dir, pattern = "*.mar_output_df.tsv")
 output_files
 
@@ -401,8 +403,63 @@ for (i in 1:length(output_files)){
   write.table(pop_df, paste0(dir, sampling, ".populations", ".txt"), quote = F, row.names = F, sep = "\t")
 }
 
+## (2) From completely random sampling ----
+dir <- "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/metadata/"
 
+# RMBL
+# df <- read.csv(paste0(dir, "rmbl_IS_random_samples_202160120.csv"))
+# meta <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/aspendatasite-levelprocessed30Mar2020.csv")
+# 
+# output_df <- apply(df[,1:5], 2, function(x){meta$Genotype[match(x, meta$Site_Code)]} )
+# output_df <- as.data.frame(output_df)
+# 
+# genotypes <- colnames(vcf@gt)
+# filt_df <- filter(output_df, plot1 %in% genotypes & plot2 %in% genotypes & plot3 %in% genotypes & plot4 %in% genotypes & plot5 %in% genotypes)
+# dim(filt_df)
+output_df$pop <- paste0("pop", seq(1, dim(output_df)[1], 1))
+colnames(output_df) <- c("geno", "geno", "geno", "geno", "geno", "pop")
 
+# SWUS
+df <- read.csv(paste0(dir, "greenhouse_2023_random_samples_20260121.csv"))
+str(df)
+meta <- read.csv(paste0(dir, "spectra_genotypes.csv"))
+# meta$Accession[match(df[,6], meta$ID_genotype_JGI)]
+
+output_df <- apply(df[,6:10], 2, function(x){meta$Accession[match(x, meta$ID_genotype_JGI)]} ) %>%
+  as.data.frame()
+head(output_df)
+dim(output_df)
+
+output_df$pop <- paste0("pop", seq(1, dim(output_df)[1], 1))
+colnames(output_df) <- c("geno", "geno", "geno", "geno", "geno", "pop")
+
+# Final formatting
+out_long <- rbind(output_df[,c(1,6)], output_df[,c(2,6)], output_df[,c(3,6)], output_df[,c(4,6)], output_df[,c(5,6)])
+out_long$geno <- as.factor(out_long$geno)
+dim(out_long)
+head(out_long)
+
+write.table(out_long, paste0(dir, "greenhouse_2023_random_samples_20260121", ".populations", ".txt"), quote = F, row.names = F, sep = "\t")
+
+#### Create input with 5 random samples of genotypes from the vcf
+# RMBL
+vcf <- read.vcfR("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.Chr02.RMBL.gvcf.gz", 
+                 nrows = 100)
+genotypes <- colnames(vcf@gt)[-1]
+
+set.seed(1)
+g_samples <- replicate(200, sample(genotypes, 5, replace = F)) %>% t() %>%
+  as.data.frame()
+g_samples$pop <- paste0("pop", seq(1, dim(g_samples)[1], 1))
+dim(g_samples)
+head(g_samples)
+
+colnames(g_samples) <- c("geno", "geno", "geno", "geno", "geno", "pop")
+out_long <- rbind(g_samples[,c(1,6)], g_samples[,c(2,6)], g_samples[,c(3,6)], g_samples[,c(4,6)], g_samples[,c(5,6)])
+out_long$geno <- as.factor(out_long$geno)
+dim(out_long)
+
+write.table(out_long, paste0(dir, "RMBL.",Sys.Date(), ".populations", ".txt"), quote = F, row.names = F, sep = "\t")
 
 #################################
 

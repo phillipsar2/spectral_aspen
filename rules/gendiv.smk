@@ -1,3 +1,5 @@
+# pixy on MAR sampling scheme
+
 rule pixy:
     input:
         vcf = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.RMBL.gvcf.gz",
@@ -25,3 +27,35 @@ rule pixy:
         --output_prefix {params.pre} \
         --n_cores 1
         """ 
+
+
+rule pixy_rand:
+    input:
+        vcf = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.RMBL.gvcf.gz",
+        popfile = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/metadata/greenhouse_2023_random_samples_20260121.populations.txt"
+#        popfile = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/metadata/RMBL.2026-01-22.populations.txt" 
+    output:
+#        "/global/scratch/users/arphillips/spectral_aspen/data/pixy/012126/RMBL.2026-01-22.{chr}.w{winsize}_pi.txt"
+        "/global/scratch/users/arphillips/spectral_aspen/data/pixy/012126/greenhouse_2023_random_samples_20260121.{chr}.w{winsize}_pi.txt"
+    params:
+        tmp = "/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/updog/vcf/updog.genomat.{chr}.RMBL.sorted.gvcf.gz",
+        winsize = "{winsize}",
+        dir = "/global/scratch/users/arphillips/spectral_aspen/data/pixy/012126",
+#        pre = "RMBL.2026-01-22.{chr}.w{winsize}"
+        pre = "greenhouse_2023_random_samples_20260121"
+    conda: "/global/scratch/users/arphillips/toolz/.conda/envs/pixy"
+    shell:
+        """
+        mkdir -p {params.dir}
+        #gunzip {input.vcf}
+        #bgzip {input.vcf}
+        #bcftools sort {input.vcf} -Oz -o {params.tmp}
+        #tabix {params.tmp}
+        pixy --stats pi watterson_theta \
+        --vcf {params.tmp} \
+        --populations {input.popfile} \
+        --window_size {params.winsize} \
+        --output_folder {params.dir} \
+        --output_prefix {params.pre} \
+        --n_cores 1
+        """

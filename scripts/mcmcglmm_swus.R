@@ -32,8 +32,9 @@ library(parallel)
 
 # (0) Load data ----
 ## Phenotype data
-sv_data <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/phenotypes/processed_leaf-level_spectra_2022-2023_outlier1_202509017.csv")
-dataset = "corrected" # corrected or corrected_CR
+sv_data <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/phenotypes/processed_leaf-level_spectra_2022-2023_outlier1_CR_202509017.csv")
+# sv_data <- read.csv("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/phenotypes/processed_leaf-level_spectra_2022-2023_outlier1_202509017.csv")
+dataset = "corrected_CR" # corrected or corrected_CR
 sv_data[, c(1:5,7:9,14,18)] <- lapply(sv_data[, c(1:5,7:9,12,16)], as.factor)
 str(sv_data)
 dim(sv_data)
@@ -106,7 +107,10 @@ str(sv_sub_pl)
 dim(sv_sub_pl)
 
 # (1) Visualize data ----
-n_wavelengths <- colnames(sv_sub_pl) %>% str_count("w") %>% sum()
+# n_wavelengths <- colnames(sv_sub_pl) %>% str_count("w") %>% sum()
+# n_wavelengths
+
+n_wavelengths <- colnames(sv_sub_pl) %>% str_count("X") %>% sum() - 1
 n_wavelengths
 
 # Sample map
@@ -151,7 +155,7 @@ ggplot() +
 #   geom_histogram() +
 #   theme_bw()
 
-ggplot(sv_sub_pl, aes(y = w701.0, x = year)) +
+ggplot(sv_sub_pl, aes(y = X701, x = year)) +
   geom_boxplot() +
   theme_bw() +
   theme(
@@ -159,12 +163,14 @@ ggplot(sv_sub_pl, aes(y = w701.0, x = year)) +
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
   ) +
   ylab("% Reflectance") +
-  xlab("Measurement year")
+  xlab("Measurement year") +
+  ggtitle("w701")
 
 ## All the wavelengths
 sv_long <- sv_sub_pl%>%
   tidyr::pivot_longer(
-  cols = `w399.4`:`w2397.2`, 
+  # cols = `w399.4`:`w2397.2`, 
+    cols = `X399.4`:`X2397.2`,
   names_to = "wavelength",
   values_to = "value"
 )
@@ -182,7 +188,7 @@ ggplot(sv_long, aes(x=value, color = wavelength)) +
 # Reflectance vs state
 sv_long %>%
   filter(wavelength %in% sample(levels(sv_long$wavelength), 9)) %>% # plot 9 random wavelength
-  ggplot(aes(y = value, x = state)) +
+  ggplot(aes(y = value, x = source_location)) +
     geom_boxplot() +
     theme_bw() +
   facet_wrap(~wavelength, scale="free_y") +
@@ -191,7 +197,7 @@ sv_long %>%
       axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
     ) +
     ylab("% Reflectance") +
-    xlab("State")
+    xlab("Source Location")
 
 # Reflectance vs ploidy
 sv_long %>%
@@ -280,7 +286,7 @@ sv_long %>%
 # > Prepare dataframe ----
 # table(sv_sub_pl$ID_genotype_JGI, sv_sub_pl$year.x)
 
-# wv = "w701"
+wv = "X701"
 sv_sub_comp <- sv_sub_pl %>% 
   filter(year == '2023') %>% # year are non-overlapping
   dplyr::select(all_of(wv), ploidy_call, age_scaled, ID_genotype_JGI, id, state, year, leaf_num) %>%
@@ -443,16 +449,22 @@ median(herit)
 HPDinterval(herit, prob = 0.95)
 
 
-### Parallelize it ----
-year = "2022"
-n_wavelengths <- colnames(sv_sub_pl) %>% str_count("w") %>% sum() - 1 
+#!! Parallelize it ----
+dataset
+year = "2023" # 2022 or 2023
+# n_wavelengths <- colnames(sv_sub_pl) %>% 
+  # str_count("w") %>% 
+  # sum() - 1 # for corrected
+n_wavelengths <- colnames(sv_sub_pl) %>% 
+  str_count("X") %>% 
+  sum() - 1 # for corrected_CR
 # wv = "w399.4"
+n_wavelengths
 
 set.seed(1)
-mod <- mclapply(601:700, function(i) {
+mod <- mclapply(411:451, function(i) {
   wv <- colnames(sv_sub_pl)[-c(1:23)][i]
   print(wv)
-  
   dir <- paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year, "/", wv)
   dir.create(dir, showWarnings = T,recursive = T)
   
@@ -504,23 +516,24 @@ mod <- mclapply(601:700, function(i) {
 }, 
 mc.cores = 10)
 
+# B. Plot the heritability results ----
+dataset = "corrected_CR"
+year = "2022"
 
-
-
-# Plot the heritability results ----
-
-### 2023
-h2_files <- Sys.glob("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/*/*.csv")
+h2_files <- Sys.glob(paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year,"/*/*.csv"))
 h2_list <- lapply(h2_files, function(x) read.table(x, sep = ","))
 h2_df <- do.call(rbind, h2_list)
 colnames(h2_df) <- c("median", "mean", "lower_ci", "upper_ci")
 
-h2_df$wv <- str_split(h2_files, pattern = "h2_estimates.w", simplify = T)[,2] %>%
+# h2_df$wv <- str_split(h2_files, pattern = "h2_estimates.w", simplify = T)[,2] %>%
+#   gsub(pattern = ".csv", replacement = "") %>%
+#   as.numeric()
+
+h2_df$wv <- str_split(h2_files, pattern = "h2_estimates.X", simplify = T)[,2] %>%
   gsub(pattern = ".csv", replacement = "") %>%
   as.numeric()
 
-head(h2_df) 
-str(h2_df)
+# write.csv(h2_df, paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year,"/h2_vs_wavelength.csv"))
 
 ggplot(h2_df, aes(x = wv, y = median)) +
   geom_line() +
@@ -529,37 +542,17 @@ ggplot(h2_df, aes(x = wv, y = median)) +
   geom_line(aes(y = upper_ci), col = "gray") +
   ylab((expression('h' ^ 2))) + 
   xlab("Wavelength (nm)") + 
-  # ggtitle("2023") +
+  ggtitle(paste0(dataset, ", ", year)) +
   scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200))
 
-ggsave("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/h2_vs_wavelength_plot.pdf",
+ggsave(paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year,"/h2_vs_wavelength_plot.pdf"),
        height = 4, width = 6, units = "in")
 
-### 2022
-h2_files_22 <- Sys.glob("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2022/*/*.csv")
-h2_list_22 <- lapply(h2_files_22, function(x) read.table(x, sep = ","))
-h2_df_22 <- do.call(rbind, h2_list_22)
-colnames(h2_df_22) <- c("median", "mean", "lower_ci", "upper_ci")
-
-h2_df_22$wv <- str_split(h2_files_22, pattern = "h2_estimates.w", simplify = T)[,2] %>%
-  gsub(pattern = ".csv", replacement = "") %>%
-  as.numeric()
-
-head(h2_df_22) 
-str(h2_df_22)
-
-ggplot(h2_df_22, aes(x = wv, y = median)) +
-  geom_line() +
-  theme_bw() +
-  geom_line(aes(y = lower_ci), col = "gray") +
-  geom_line(aes(y = upper_ci), col = "gray") +
-  ylab("Median h2") + xlab("Wavelength (nm)") + ggtitle("2022") +
-  scale_x_continuous(breaks=seq(from = 300, to = 2500, by = 200))
 
 
-# (6) Effect sizes ----
+# (2) Effect sizes ----
 ## Ploidy effect sizes
-mod_files <- Sys.glob("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/*/mod.*.rds")
+mod_files <- Sys.glob(paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/", dataset,"/", year,"/*/mod.*.rds"))
 n_wavelengths <- length(mod_files)
 
 ploidy_eff <- matrix(NA, nrow = n_wavelengths, ncol = 4)
@@ -591,25 +584,25 @@ ggplot(ploidy_eff_num, aes(x = wv, y= median)) +
 ggsave("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/2023/effoftriploidy_vs_wavelength_plot.pdf",
        height = 4, width = 6, units = "in")
 
-# Individual models
-random_eff <- apply(mod.state$VCV, 2, median)
-random_CI <- HPDinterval(mod.state$VCV, prob = 0.95) %>% as.data.frame()
-
-fixed_eff <- apply(mod.state$Sol[,1:3], 2, median)
-fixed_CI <- HPDinterval(mod.state$Sol[,1:3], prob = 0.95) %>% as.data.frame()
-
-eff_df <- rbind(random_CI, fixed_CI)
-eff_df$eff <- c(random_eff, fixed_eff)
-rownames(eff_df)[5] <- "Intercept"
-eff_df$variable <- rownames(eff_df)
-
-filter(eff_df, variable != "Intercept") %>%
-  ggplot() +
-  geom_segment( aes(x=variable, xend=variable, y=lower, yend=upper), color="grey", size = 1) +
-  geom_point( aes(x=variable, y=eff), color="black", size=2 ) +
-  coord_flip()+
-  theme_bw() +
-  theme(legend.position = "none") +
-  ylab("Median of the posterior distribution") +
-  xlab("Variable") +
-  ylim(-10,40)
+# # Individual models
+# random_eff <- apply(mod$VCV, 2, median)
+# random_CI <- HPDinterval(mod.state$VCV, prob = 0.95) %>% as.data.frame()
+# 
+# fixed_eff <- apply(mod.state$Sol[,1:3], 2, median)
+# fixed_CI <- HPDinterval(mod.state$Sol[,1:3], prob = 0.95) %>% as.data.frame()
+# 
+# eff_df <- rbind(random_CI, fixed_CI)
+# eff_df$eff <- c(random_eff, fixed_eff)
+# rownames(eff_df)[5] <- "Intercept"
+# eff_df$variable <- rownames(eff_df)
+# 
+# filter(eff_df, variable != "Intercept") %>%
+#   ggplot() +
+#   geom_segment( aes(x=variable, xend=variable, y=lower, yend=upper), color="grey", size = 1) +
+#   geom_point( aes(x=variable, y=eff), color="black", size=2 ) +
+#   coord_flip()+
+#   theme_bw() +
+#   theme(legend.position = "none") +
+#   ylab("Median of the posterior distribution") +
+#   xlab("Variable") +
+#   ylim(-10,40)
