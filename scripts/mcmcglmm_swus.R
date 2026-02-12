@@ -462,7 +462,7 @@ n_wavelengths <- colnames(sv_sub_pl) %>%
 n_wavelengths
 
 set.seed(1)
-mod <- mclapply(411:451, function(i) {
+mod <- mclapply(451:600, function(i) {
   wv <- colnames(sv_sub_pl)[-c(1:23)][i]
   print(wv)
   dir <- paste0("/global/scratch/projects/fc_moilab/aphillips/spectral_aspen/data/h2_mods/",dataset,"/", year, "/", wv)

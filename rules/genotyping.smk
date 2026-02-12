@@ -22,12 +22,13 @@ rule gbs2ploidy:
 rule get_snps_fromgvcf:
     input:
         ref = config["data"]["reference"]["genome"],
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.snps.vcf.gz"
     shell:
         """
-        gatk SelectVariants \
+        gatk IndexFeatureFile -I {input.vcf}
+        gatk SelectVariants --java-options ""-Xmx4G"" \
         -R {input.ref} \
         -V {input.vcf} \
         --select-type-to-include SNP \
@@ -38,12 +39,13 @@ rule get_snps_fromgvcf:
 rule get_invar:
     input:
         ref = config["data"]["reference"]["genome"],
-        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf.gz"
+        vcf = "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.gvcf"
     output:
         "/global/scratch/users/arphillips/spectral_aspen/data/processed/filtered_snps/rad_aspen.{chr}.{dataset}.filtered.invar.vcf.gz"
     shell:
         """
-        gatk SelectVariants \
+        gatk IndexFeatureFile -I {input.vcf}
+        gatk SelectVariants --java-options ""-Xmx4G"" \
         -R {input.ref} \
         -V {input.vcf} \
         --select-type-to-include NO_VARIATION \
